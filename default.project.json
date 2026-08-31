@@ -1,0 +1,59 @@
+{
+  "name": "GnomeGame",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+
+      "Shared": {
+        "$path": "src/shared"
+      },
+
+      "Remotes": {
+        "$className": "Folder",
+        "RequestState": { "$className": "RemoteEvent" },
+        "GnomesUpdated": { "$className": "RemoteEvent" },
+        "StageState": { "$className": "RemoteEvent" },
+        "FightEvent": { "$className": "RemoteEvent" }
+      }
+    },
+
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "Server": {
+        "$path": "src/server"
+      }
+    },
+
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "Client": {
+          "$path": "src/client"
+        }
+      }
+    },
+
+    "Workspace": {
+      "$className": "Workspace",
+      "$properties": {
+        "Gravity": 196.2
+      }
+    },
+
+    "Lighting": {
+      "$className": "Lighting",
+      "$properties": {
+        "Ambient": [0.35, 0.35, 0.38],
+        "OutdoorAmbient": [0.45, 0.45, 0.5],
+        "Brightness": 2.2,
+        "ClockTime": 14.5,
+        "GeographicLatitude": 20,
+        "EnvironmentDiffuseScale": 0.6,
+        "EnvironmentSpecularScale": 0.4
+      }
+    }
+  }
+}

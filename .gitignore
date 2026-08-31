@@ -1,0 +1,10 @@
+# Roblox / Rojo
+*.rbxl
+*.rbxlx
+*.rbxl.lock
+*.rbxlx.lock
+sourcemap.json
+
+# Tooling
+/.vscode/
+/node_modules/
