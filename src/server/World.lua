@@ -31,6 +31,13 @@ World.ARENA_SLOTS = {
 
 World.ENEMY_POSITION = Vector3.new(0, 0.3, 46)
 
+-- Filled in at runtime by Build, PlaceGnomes and SpawnEnemy.
+World.Map = nil :: Folder?
+World.Enemy = nil :: Model?
+World.GnomeFolder = nil :: Folder?
+World.ChallengeStone = nil :: BasePart?
+World.Prompt = nil :: ProximityPrompt?
+
 local function solid(parent, name, size, position, color, material)
 	local part = Parts.New({
 		Name = name,
