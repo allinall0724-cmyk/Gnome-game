@@ -1,0 +1,12 @@
+# Requires the Roblox standard library definition. Generate it once with:
+#   selene generate-roblox-std
+# which writes roblox.toml next to this file. Commit that file.
+std = "roblox"
+
+[rules]
+# Roblox code legitimately shadows in event handlers a lot.
+shadowing = "warn"
+# Catch the classics.
+unused_variable = "warn"
+undefined_variable = "deny"
+multiple_statements = "warn"
