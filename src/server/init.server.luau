@@ -23,6 +23,11 @@ local GateService = require(script.GateService)
 
 local STAGE = Stages.Get(1)
 
+-- The map is built at runtime rather than stored in the place file, so hold
+-- character spawning until the ground actually exists. Otherwise a player who
+-- joins mid-build drops through the void.
+Players.CharacterAutoLoads = false
+
 World.Build()
 
 -- The starter squad: three plain garden gnomes, one per biome.
@@ -72,6 +77,15 @@ Players.PlayerAdded:Connect(function(player)
 	GnomesUpdated:FireClient(player, summary())
 	GateService.PushState(player)
 end)
+
+-- The world is ready: let characters spawn, and load anyone who joined while
+-- the map was still being built.
+Players.CharacterAutoLoads = true
+for _, player in ipairs(Players:GetPlayers()) do
+	if not player.Character then
+		player:LoadCharacter()
+	end
+end
 
 World.Prompt.Triggered:Connect(function(player)
 	local ok, reason = GateService.Fight(player, squad, STAGE)
