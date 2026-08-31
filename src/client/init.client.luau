@@ -93,8 +93,8 @@ local squadPanel = new("Frame", {
 	Name = "SquadPanel",
 	BackgroundColor3 = PANEL,
 	BackgroundTransparency = 0.08,
-	Position = UDim2.new(0, 16, 0, 16),
-	Size = UDim2.new(0, 250, 0, 232),
+	Position = UDim2.fromOffset(16, 16),
+	Size = UDim2.fromOffset(250, 232),
 	Parent = screen,
 }, { corner(12), padding(12) })
 
@@ -147,7 +147,7 @@ local function buildCard(gnome, order)
 		BackgroundColor3 = accent,
 		BorderSizePixel = 0,
 		Size = UDim2.new(0, 4, 1, -12),
-		Position = UDim2.new(0, 6, 0, 6),
+		Position = UDim2.fromOffset(6, 6),
 		Parent = card,
 	}, { corner(2) })
 
@@ -156,7 +156,7 @@ local function buildCard(gnome, order)
 		Text = gnome.name,
 		Font = Enum.Font.GothamBold,
 		TextSize = 13,
-		Position = UDim2.new(0, 18, 0, 6),
+		Position = UDim2.fromOffset(18, 6),
 		Size = UDim2.new(1, -24, 0, 16),
 	})
 	label({
@@ -164,7 +164,7 @@ local function buildCard(gnome, order)
 		Text = string.format("%s  -  %s", gnome.biome, gnome.rarity),
 		TextColor3 = accent,
 		TextSize = 11,
-		Position = UDim2.new(0, 18, 0, 24),
+		Position = UDim2.fromOffset(18, 24),
 		Size = UDim2.new(0.55, 0, 0, 14),
 	})
 	label({
@@ -186,8 +186,8 @@ local stagePanel = new("Frame", {
 	Name = "StagePanel",
 	BackgroundColor3 = PANEL,
 	BackgroundTransparency = 0.08,
-	Position = UDim2.new(0, 16, 0, 260),
-	Size = UDim2.new(0, 250, 0, 138),
+	Position = UDim2.fromOffset(16, 260),
+	Size = UDim2.fromOffset(250, 138),
 	Parent = screen,
 }, { corner(12), padding(12) })
 
@@ -240,7 +240,7 @@ local overlay = new("Frame", {
 	BackgroundTransparency = 0.06,
 	AnchorPoint = Vector2.new(0.5, 0),
 	Position = UDim2.new(0.5, 0, 0, 24),
-	Size = UDim2.new(0, 420, 0, 214),
+	Size = UDim2.fromOffset(420, 214),
 	Visible = false,
 	Parent = screen,
 }, { corner(14), padding(14) })
@@ -260,7 +260,7 @@ local function buildBar(parent, y, barColor, nameText)
 		Text = nameText,
 		Font = Enum.Font.GothamBold,
 		TextSize = 12,
-		Position = UDim2.new(0, 0, 0, y),
+		Position = UDim2.fromOffset(0, y),
 		Size = UDim2.new(0.6, 0, 0, 14),
 	})
 	local valueLabel = label({
@@ -275,14 +275,14 @@ local function buildBar(parent, y, barColor, nameText)
 	local track = new("Frame", {
 		BackgroundColor3 = Color3.fromRGB(48, 51, 60),
 		BorderSizePixel = 0,
-		Position = UDim2.new(0, 0, 0, y + 17),
+		Position = UDim2.fromOffset(0, y + 17),
 		Size = UDim2.new(1, 0, 0, 12),
 		Parent = parent,
 	}, { corner(6) })
 	local fill = new("Frame", {
 		BackgroundColor3 = barColor,
 		BorderSizePixel = 0,
-		Size = UDim2.new(1, 0, 1, 0),
+		Size = UDim2.fromScale(1, 1),
 		Parent = track,
 	}, { corner(6) })
 	return { name = nameLabel, value = valueLabel, fill = fill }
@@ -298,7 +298,7 @@ local logBox = label({
 	TextSize = 11,
 	TextYAlignment = Enum.TextYAlignment.Top,
 	TextWrapped = true,
-	Position = UDim2.new(0, 0, 0, 130),
+	Position = UDim2.fromOffset(0, 130),
 	Size = UDim2.new(1, 0, 0, 44),
 })
 
@@ -308,14 +308,14 @@ local resultLabel = label({
 	Font = Enum.Font.FredokaOne,
 	TextSize = 20,
 	TextXAlignment = Enum.TextXAlignment.Center,
-	Position = UDim2.new(0, 0, 0, 176),
+	Position = UDim2.fromOffset(0, 176),
 	Size = UDim2.new(1, 0, 0, 24),
 })
 
 local function setBar(bar, current, max)
 	local ratio = max > 0 and math.clamp(current / max, 0, 1) or 0
 	TweenService:Create(bar.fill, TweenInfo.new(0.18), {
-		Size = UDim2.new(ratio, 0, 1, 0),
+		Size = UDim2.fromScale(ratio, 1),
 	}):Play()
 	bar.value.Text = string.format("%d / %d", math.max(0, math.floor(current + 0.5)), max)
 end
@@ -337,20 +337,26 @@ GnomesUpdated.OnClientEvent:Connect(function(data)
 		buildCard(gnome, index)
 	end
 
-	squadTotals.Text = string.format("%d PWR total   -   %d HP total", data.totalPower, data.totalHealth)
+	squadTotals.Text =
+		string.format("%d PWR total   -   %d HP total", data.totalPower, data.totalHealth)
 	cardHolder.Size = UDim2.new(1, 0, 0, #data.gnomes * 52)
-	squadPanel.Size = UDim2.new(0, 250, 0, 76 + #data.gnomes * 52)
-	stagePanel.Position = UDim2.new(0, 16, 0, 16 + squadPanel.Size.Y.Offset + 12)
+	squadPanel.Size = UDim2.fromOffset(250, 76 + #data.gnomes * 52)
+	stagePanel.Position = UDim2.fromOffset(16, 16 + squadPanel.Size.Y.Offset + 12)
 
 	stageTitle.Text = string.upper(data.stage.name)
 	stageBlurb.Text = data.stage.blurb
-	stageEnemy.Text = string.format("%s  -  %d HP  -  %d PWR",
-		data.stage.enemyName, data.stage.enemyHealth, data.stage.enemyPower)
+	stageEnemy.Text = string.format(
+		"%s  -  %d HP  -  %d PWR",
+		data.stage.enemyName,
+		data.stage.enemyHealth,
+		data.stage.enemyPower
+	)
 end)
 
 StageState.OnClientEvent:Connect(function(state)
 	if state.cooldown and state.cooldown > 0 then
-		stageHint.Text = string.format("Road closed. %ds until you can push again.", math.ceil(state.cooldown))
+		stageHint.Text =
+			string.format("Road closed. %ds until you can push again.", math.ceil(state.cooldown))
 		stageHint.TextColor3 = Color3.fromRGB(255, 150, 130)
 	elseif state.busy then
 		stageHint.Text = "Another challenger is at the gate."
@@ -375,7 +381,6 @@ FightEvent.OnClientEvent:Connect(function(payload)
 		logBox.Text = string.format("%s blocks the gate.", payload.enemyName)
 		resultLabel.Text = ""
 		overlay.Visible = true
-
 	elseif payload.phase == "tick" then
 		setBar(enemyBar, payload.enemyHealth, fightState.enemyMax)
 		setBar(squadBar, payload.squadHealth, fightState.squadMax)
@@ -384,7 +389,6 @@ FightEvent.OnClientEvent:Connect(function(payload)
 			table.remove(logLines, 1)
 		end
 		logBox.Text = table.concat(logLines, "\n")
-
 	elseif payload.phase == "finish" then
 		setBar(enemyBar, payload.enemyHealth, fightState.enemyMax)
 		setBar(squadBar, payload.squadHealth, fightState.squadMax)

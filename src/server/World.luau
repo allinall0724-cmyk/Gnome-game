@@ -65,37 +65,85 @@ function World.Build()
 	map.Name = "Map"
 	map.Parent = Workspace
 
-	solid(map, "Ground", Vector3.new(220, 2, 220), Vector3.new(0, -1, 20),
-		Color3.fromRGB(94, 132, 74), Enum.Material.Grass)
+	solid(
+		map,
+		"Ground",
+		Vector3.new(220, 2, 220),
+		Vector3.new(0, -1, 20),
+		Color3.fromRGB(94, 132, 74),
+		Enum.Material.Grass
+	)
 
 	-- the player's plot
-	solid(map, "PlotBorder", Vector3.new(38, 0.5, 38), Vector3.new(0, 0.05, 0),
-		Color3.fromRGB(108, 78, 52), Enum.Material.WoodPlanks)
-	solid(map, "Plot", Vector3.new(36, 0.5, 36), Vector3.new(0, 0.15, 0),
-		Color3.fromRGB(122, 92, 60), Enum.Material.Ground)
+	solid(
+		map,
+		"PlotBorder",
+		Vector3.new(38, 0.5, 38),
+		Vector3.new(0, 0.05, 0),
+		Color3.fromRGB(108, 78, 52),
+		Enum.Material.WoodPlanks
+	)
+	solid(
+		map,
+		"Plot",
+		Vector3.new(36, 0.5, 36),
+		Vector3.new(0, 0.15, 0),
+		Color3.fromRGB(122, 92, 60),
+		Enum.Material.Ground
+	)
 
 	-- pedestal under each gnome slot
 	for index, slot in ipairs(World.PLOT_SLOTS) do
-		local pad = solid(map, "Slot" .. index, Vector3.new(3, 0.4, 3),
-			Vector3.new(slot.X, 0.3, slot.Z), Color3.fromRGB(146, 118, 82), Enum.Material.Slate)
+		local pad = solid(
+			map,
+			"Slot" .. index,
+			Vector3.new(3, 0.4, 3),
+			Vector3.new(slot.X, 0.3, slot.Z),
+			Color3.fromRGB(146, 118, 82),
+			Enum.Material.Slate
+		)
 		pad.CanCollide = false
 	end
 
 	-- road from the plot up to the gate
-	solid(map, "Road", Vector3.new(8, 0.3, 34), Vector3.new(0, 0.15, 20),
-		Color3.fromRGB(150, 138, 118), Enum.Material.Pebble)
+	solid(
+		map,
+		"Road",
+		Vector3.new(8, 0.3, 34),
+		Vector3.new(0, 0.15, 20),
+		Color3.fromRGB(150, 138, 118),
+		Enum.Material.Pebble
+	)
 
 	-- arena floor past the gate
-	solid(map, "Arena", Vector3.new(34, 0.3, 34), Vector3.new(0, 0.15, 44),
-		Color3.fromRGB(120, 116, 96), Enum.Material.Ground)
+	solid(
+		map,
+		"Arena",
+		Vector3.new(34, 0.3, 34),
+		Vector3.new(0, 0.15, 44),
+		Color3.fromRGB(120, 116, 96),
+		Enum.Material.Ground
+	)
 
 	-- the gate itself
 	for _, side in ipairs({ -1, 1 }) do
-		solid(map, "GatePillar", Vector3.new(2.4, 13, 2.4), Vector3.new(side * 6, 6.5, 34),
-			Color3.fromRGB(126, 124, 118), Enum.Material.Rock)
+		solid(
+			map,
+			"GatePillar",
+			Vector3.new(2.4, 13, 2.4),
+			Vector3.new(side * 6, 6.5, 34),
+			Color3.fromRGB(126, 124, 118),
+			Enum.Material.Rock
+		)
 	end
-	solid(map, "GateLintel", Vector3.new(16, 2.4, 2.4), Vector3.new(0, 14.2, 34),
-		Color3.fromRGB(126, 124, 118), Enum.Material.Rock)
+	solid(
+		map,
+		"GateLintel",
+		Vector3.new(16, 2.4, 2.4),
+		Vector3.new(0, 14.2, 34),
+		Color3.fromRGB(126, 124, 118),
+		Enum.Material.Rock
+	)
 
 	local veil = Parts.New({
 		Name = "GateVeil",
@@ -120,8 +168,14 @@ function World.Build()
 	spawnPoint.Parent = map
 
 	-- the stone you interact with to start the fight
-	local stone = solid(map, "ChallengeStone", Vector3.new(3, 3.4, 1.6), Vector3.new(0, 1.7, 29),
-		Color3.fromRGB(96, 94, 90), Enum.Material.Rock)
+	local stone = solid(
+		map,
+		"ChallengeStone",
+		Vector3.new(3, 3.4, 1.6),
+		Vector3.new(0, 1.7, 29),
+		Color3.fromRGB(96, 94, 90),
+		Enum.Material.Rock
+	)
 
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.Name = "ChallengePrompt"

@@ -213,7 +213,10 @@ function GnomeBuilder.Enemy(stage)
 		color = BODY,
 		material = Enum.Material.Grass,
 	})
-	Parts.Ball(model, { name = "Brow", d = 2.4, y = 3.5, z = -0.4, color = BODY, material = Enum.Material.Grass })
+	Parts.Ball(
+		model,
+		{ name = "Brow", d = 2.4, y = 3.5, z = -0.4, color = BODY, material = Enum.Material.Grass }
+	)
 
 	-- thorns across the back and crown
 	local thorns = {
@@ -279,8 +282,7 @@ function GnomeBuilder.Enemy(stage)
 			Size = Vector3.new(2.2, 0.7, 0.7),
 			Color = THORN,
 			Material = Enum.Material.Slate,
-			CFrame = CFrame.new(side * 1.9, 2.4, 0)
-				* CFrame.Angles(0, 0, math.pi / 2 + side * 0.5),
+			CFrame = CFrame.new(side * 1.9, 2.4, 0) * CFrame.Angles(0, 0, math.pi / 2 + side * 0.5),
 			Parent = model,
 		})
 	end

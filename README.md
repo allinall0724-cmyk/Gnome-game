@@ -42,17 +42,18 @@ front of the gate and hold **E** to challenge it.
 
 ```
 default.project.json   Rojo mapping
+rokit.toml             pinned toolchain (rojo, stylua, selene, luau-lsp)
 src/shared/
-  GnomeData.lua        gnome stats, biomes, starter loadout  <- tune balance here
-  Stages.lua           the gate road; tick rate and loss cooldown
-  Parts.lua            primitive helpers (cones, discs, welding, nameplates)
-  GnomeBuilder.lua     builds the gnome and creature models
+  GnomeData.luau      gnome stats, biomes, starter loadout  <- tune balance here
+  Stages.luau         the gate road; tick rate and loss cooldown
+  Parts.luau          primitive helpers (cones, discs, welding, nameplates)
+  GnomeBuilder.luau   builds the gnome and creature models
 src/server/
-  init.server.lua      bootstrap: build map, hand out gnomes, wire the gate
-  World.lua            the map, plot slots, arena slots
-  GateService.lua      auto-resolved gate combat, server-authoritative
+  init.server.luau    bootstrap: build map, hand out gnomes, wire the gate
+  World.luau          the map, plot slots, arena slots
+  GateService.luau    auto-resolved gate combat, server-authoritative
 src/client/
-  init.client.lua      squad panel, stage panel, battle overlay
+  init.client.luau    squad panel, stage panel, battle overlay
 ```
 
 ## Not built yet
