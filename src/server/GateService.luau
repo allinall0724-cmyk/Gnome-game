@@ -28,11 +28,14 @@ local rng = Random.new()
 local activeFight = nil -- the player currently pushing the gate
 local cooldownUntil = {} -- [player] = os.clock() deadline after a loss
 
-local HOP = TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-local RETURN = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-local MARCH = TweenInfo.new(0.9, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
-local FLASH_IN = TweenInfo.new(0.06)
-local FLASH_OUT = TweenInfo.new(0.25)
+-- Durations are generous and eased on both ends. Anchored-part CFrames
+-- replicate slowly, so short abrupt tweens arrive as a jump; longer arcs give
+-- the client something continuous to interpolate along.
+local HOP = TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+local RETURN = TweenInfo.new(0.34, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+local MARCH = TweenInfo.new(1.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+local FLASH_IN = TweenInfo.new(0.09, Enum.EasingStyle.Sine)
+local FLASH_OUT = TweenInfo.new(0.38, Enum.EasingStyle.Sine)
 
 local function highlightOf(model, color)
 	local highlight = model:FindFirstChildOfClass("Highlight")
@@ -66,7 +69,7 @@ local function lunge(model, home, distance)
 	TweenService:Create(root, HOP, {
 		CFrame = home * CFrame.new(0, 0.6, -distance),
 	}):Play()
-	task.delay(0.16, function()
+	task.delay(0.22, function()
 		if root.Parent then
 			TweenService:Create(root, RETURN, { CFrame = home }):Play()
 		end
@@ -154,7 +157,7 @@ function GateService.Fight(player, squad, stage)
 	})
 	GateService.PushState(player)
 
-	task.wait(1.1)
+	task.wait(1.8)
 
 	local function roll(base)
 		return base * (1 + rng:NextNumber(-Stages.VARIANCE, Stages.VARIANCE))

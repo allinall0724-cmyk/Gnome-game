@@ -54,7 +54,7 @@ function GnomeBuilder.Gnome(def)
 		radius = 0.74,
 		tipRadius = 0.42,
 		height = 1.2,
-		slices = 6,
+		slices = 12,
 		color = c.tunic,
 		material = Enum.Material.SmoothPlastic,
 	})
@@ -118,7 +118,7 @@ function GnomeBuilder.Gnome(def)
 		radius = 0.46,
 		height = 0.95,
 		dir = -1,
-		slices = 7,
+		slices = 14,
 		z = -0.18,
 		color = c.beard,
 		material = Enum.Material.SmoothPlastic,
@@ -147,7 +147,7 @@ function GnomeBuilder.Gnome(def)
 		baseY = 2.04,
 		radius = 0.63,
 		height = 1.3,
-		slices = 9,
+		slices = 20,
 		color = c.hat,
 		material = Enum.Material.SmoothPlastic,
 	})
@@ -213,17 +213,14 @@ function GnomeBuilder.Enemy(stage)
 		color = BODY,
 		material = Enum.Material.SmoothPlastic,
 	})
-	Parts.Ball(
-		model,
-		{
-			name = "Brow",
-			d = 2.4,
-			y = 3.5,
-			z = -0.4,
-			color = BODY,
-			material = Enum.Material.SmoothPlastic,
-		}
-	)
+	Parts.Ball(model, {
+		name = "Brow",
+		d = 2.4,
+		y = 3.5,
+		z = -0.4,
+		color = BODY,
+		material = Enum.Material.SmoothPlastic,
+	})
 
 	-- thorns across the back and crown
 	local thorns = {
@@ -239,7 +236,7 @@ function GnomeBuilder.Enemy(stage)
 			baseY = 3.4,
 			radius = thorn.r,
 			height = thorn.h,
-			slices = 5,
+			slices = 9,
 			x = thorn.x,
 			z = thorn.z,
 			color = THORN,
@@ -273,7 +270,7 @@ function GnomeBuilder.Enemy(stage)
 			baseY = 2.62,
 			radius = 0.16,
 			height = 0.42,
-			slices = 3,
+			slices = 5,
 			dir = -1,
 			x = i * 0.55,
 			z = -1.6,

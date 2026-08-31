@@ -77,7 +77,7 @@ local function decorate(map)
 			radius = 1.15 * scale,
 			tipRadius = 0.35 * scale,
 			height = 0.95 * scale,
-			slices = 5,
+			slices = 9,
 			x = x,
 			z = z,
 			color = Color3.fromRGB(240, 78, 88),

@@ -9,9 +9,13 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+
+local Stages = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Stages"))
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local RequestState = Remotes:WaitForChild("RequestState")
@@ -322,7 +326,7 @@ local resultLabel = label({
 
 local function setBar(bar, current, max)
 	local ratio = max > 0 and math.clamp(current / max, 0, 1) or 0
-	TweenService:Create(bar.fill, TweenInfo.new(0.18), {
+	TweenService:Create(bar.fill, TweenInfo.new(Stages.TICK, Enum.EasingStyle.Linear), {
 		Size = UDim2.fromScale(ratio, 1),
 	}):Play()
 	bar.value.Text = string.format("%d / %d", math.max(0, math.floor(current + 0.5)), max)
@@ -414,3 +418,87 @@ FightEvent.OnClientEvent:Connect(function(payload)
 end)
 
 RequestState:FireServer()
+
+--------------------------------------------------------------------
+-- Local motion
+--------------------------------------------------------------------
+--[[
+	The server drives the gnomes by tweening their anchored roots, but an
+	anchored part's CFrame only replicates a handful of times a second, so
+	whatever the server does arrives as a series of jumps. That is what reads
+	as choppy.
+
+	These run on the client every frame instead. Each one tracks the pose the
+	server last sent and layers smooth motion on top of it, so the server stays
+	authoritative over where things are while the client fills in the frames
+	between updates.
+]]
+
+local function startLocalMotion()
+	local map = Workspace:WaitForChild("Map", 30)
+	if not map then
+		return
+	end
+
+	local gnomes = map:WaitForChild("Gnomes", 30)
+	local veil = map:FindFirstChild("GateVeil")
+	local motion = {}
+
+	local function stateFor(model)
+		local root = model.PrimaryPart or model:FindFirstChild("Root")
+		if not (root and root:IsA("BasePart")) then
+			return nil, nil
+		end
+		local state = motion[model]
+		if not state then
+			state = {
+				target = root.CFrame, -- newest pose the server sent
+				smooth = root.CFrame, -- what we actually draw, chasing target
+				applied = nil,
+				phase = math.random() * math.pi * 2,
+			}
+			motion[model] = state
+		end
+		-- If the root no longer holds what we wrote last frame, replication
+		-- delivered a new server pose. Take it as the target rather than
+		-- snapping to it, so the gaps between updates get filled in.
+		if
+			not state.applied
+			or (state.applied.Position - root.CFrame.Position).Magnitude > 0.0015
+		then
+			state.target = root.CFrame
+		end
+		return root, state
+	end
+
+	RunService.RenderStepped:Connect(function(dt)
+		local now = os.clock()
+		-- framerate-independent approach rate
+		local alpha = 1 - math.exp(-dt * 11)
+
+		if gnomes then
+			for _, model in ipairs(gnomes:GetChildren()) do
+				if model:IsA("Model") then
+					local root, state = stateFor(model)
+					if root then
+						state.smooth = state.smooth:Lerp(state.target, alpha)
+						local bob = math.sin(now * 2.1 + state.phase) * 0.09
+						local sway = math.sin(now * 1.3 + state.phase) * 0.03
+						local pose = state.smooth
+							* CFrame.new(0, bob, 0)
+							* CFrame.Angles(0, sway, 0)
+						root.CFrame = pose
+						state.applied = pose
+					end
+				end
+			end
+		end
+
+		-- the gate shimmer is client-only, so it can just breathe on its own
+		if veil and veil.Parent then
+			veil.Transparency = 0.6 + math.sin(now * 1.6) * 0.09
+		end
+	end)
+end
+
+task.spawn(startLocalMotion)
