@@ -12,10 +12,10 @@ local Parts = require(script.Parent.Parts)
 local GnomeBuilder = {}
 
 local BIOME_COLOR = {
-	Forest = Color3.fromRGB(126, 200, 110),
-	Desert = Color3.fromRGB(232, 200, 122),
-	Mountain = Color3.fromRGB(168, 190, 220),
-	Swamp = Color3.fromRGB(140, 190, 160),
+	Forest = Color3.fromRGB(122, 232, 122),
+	Desert = Color3.fromRGB(255, 216, 110),
+	Mountain = Color3.fromRGB(132, 198, 255),
+	Swamp = Color3.fromRGB(140, 232, 190),
 }
 
 GnomeBuilder.BiomeColor = BIOME_COLOR
@@ -43,7 +43,7 @@ function GnomeBuilder.Gnome(def)
 			y = 0.15,
 			z = -0.06,
 			color = c.boot,
-			material = Enum.Material.Fabric,
+			material = Enum.Material.SmoothPlastic,
 		})
 	end
 
@@ -56,7 +56,7 @@ function GnomeBuilder.Gnome(def)
 		height = 1.2,
 		slices = 6,
 		color = c.tunic,
-		material = Enum.Material.Fabric,
+		material = Enum.Material.SmoothPlastic,
 	})
 
 	Parts.Disc(model, {
@@ -65,7 +65,7 @@ function GnomeBuilder.Gnome(def)
 		height = 0.17,
 		y = 0.95,
 		color = c.belt,
-		material = Enum.Material.Fabric,
+		material = Enum.Material.SmoothPlastic,
 	})
 	Parts.Block(model, {
 		name = "Buckle",
@@ -73,7 +73,7 @@ function GnomeBuilder.Gnome(def)
 		y = 0.95,
 		z = -0.58,
 		color = Color3.fromRGB(214, 179, 92),
-		material = Enum.Material.Metal,
+		material = Enum.Material.SmoothPlastic,
 	})
 
 	-- arms, splayed slightly out from the body
@@ -83,7 +83,7 @@ function GnomeBuilder.Gnome(def)
 			Shape = Enum.PartType.Cylinder,
 			Size = Vector3.new(0.85, 0.33, 0.33),
 			Color = c.tunic,
-			Material = Enum.Material.Fabric,
+			Material = Enum.Material.SmoothPlastic,
 			CFrame = CFrame.new(side * 0.66, 1.0, 0)
 				* CFrame.Angles(0, 0, math.pi / 2 + side * 0.22),
 			Parent = model,
@@ -121,7 +121,7 @@ function GnomeBuilder.Gnome(def)
 		slices = 7,
 		z = -0.18,
 		color = c.beard,
-		material = Enum.Material.Fabric,
+		material = Enum.Material.SmoothPlastic,
 	})
 	Parts.Disc(model, {
 		name = "Moustache",
@@ -130,7 +130,7 @@ function GnomeBuilder.Gnome(def)
 		y = 1.66,
 		z = -0.4,
 		color = c.beard,
-		material = Enum.Material.Fabric,
+		material = Enum.Material.SmoothPlastic,
 	})
 
 	-- the hat: brim plus a tall pointed cone
@@ -140,7 +140,7 @@ function GnomeBuilder.Gnome(def)
 		height = 0.14,
 		y = 2.06,
 		color = c.hat,
-		material = Enum.Material.Fabric,
+		material = Enum.Material.SmoothPlastic,
 	})
 	Parts.Cone(model, {
 		name = "Hat",
@@ -149,7 +149,7 @@ function GnomeBuilder.Gnome(def)
 		height = 1.3,
 		slices = 9,
 		color = c.hat,
-		material = Enum.Material.Fabric,
+		material = Enum.Material.SmoothPlastic,
 	})
 
 	Parts.Rig(model, root)
@@ -170,8 +170,8 @@ function GnomeBuilder.Gnome(def)
 end
 
 function GnomeBuilder.Enemy(stage)
-	local BODY = Color3.fromRGB(72, 92, 58)
-	local THORN = Color3.fromRGB(48, 62, 40)
+	local BODY = Color3.fromRGB(122, 214, 92)
+	local THORN = Color3.fromRGB(196, 84, 220)
 
 	local model = Instance.new("Model")
 	model.Name = stage.enemyName
@@ -193,7 +193,7 @@ function GnomeBuilder.Enemy(stage)
 			x = side * 0.8,
 			y = 0.55,
 			color = THORN,
-			material = Enum.Material.Slate,
+			material = Enum.Material.SmoothPlastic,
 		})
 		Parts.Block(model, {
 			name = "Foot",
@@ -202,7 +202,7 @@ function GnomeBuilder.Enemy(stage)
 			y = 0.17,
 			z = -0.2,
 			color = THORN,
-			material = Enum.Material.Slate,
+			material = Enum.Material.SmoothPlastic,
 		})
 	end
 
@@ -211,11 +211,18 @@ function GnomeBuilder.Enemy(stage)
 		d = 3.4,
 		y = 2.5,
 		color = BODY,
-		material = Enum.Material.Grass,
+		material = Enum.Material.SmoothPlastic,
 	})
 	Parts.Ball(
 		model,
-		{ name = "Brow", d = 2.4, y = 3.5, z = -0.4, color = BODY, material = Enum.Material.Grass }
+		{
+			name = "Brow",
+			d = 2.4,
+			y = 3.5,
+			z = -0.4,
+			color = BODY,
+			material = Enum.Material.SmoothPlastic,
+		}
 	)
 
 	-- thorns across the back and crown
@@ -236,7 +243,7 @@ function GnomeBuilder.Enemy(stage)
 			x = thorn.x,
 			z = thorn.z,
 			color = THORN,
-			material = Enum.Material.Slate,
+			material = Enum.Material.SmoothPlastic,
 		})
 	end
 
@@ -281,7 +288,7 @@ function GnomeBuilder.Enemy(stage)
 			Shape = Enum.PartType.Cylinder,
 			Size = Vector3.new(2.2, 0.7, 0.7),
 			Color = THORN,
-			Material = Enum.Material.Slate,
+			Material = Enum.Material.SmoothPlastic,
 			CFrame = CFrame.new(side * 1.9, 2.4, 0) * CFrame.Angles(0, 0, math.pi / 2 + side * 0.5),
 			Parent = model,
 		})

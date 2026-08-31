@@ -20,15 +20,15 @@ local StageState = Remotes:WaitForChild("StageState")
 local FightEvent = Remotes:WaitForChild("FightEvent")
 
 local BIOME_COLOR = {
-	Forest = Color3.fromRGB(126, 200, 110),
-	Desert = Color3.fromRGB(232, 200, 122),
-	Mountain = Color3.fromRGB(168, 190, 220),
-	Swamp = Color3.fromRGB(140, 190, 160),
+	Forest = Color3.fromRGB(62, 176, 76),
+	Desert = Color3.fromRGB(226, 158, 30),
+	Mountain = Color3.fromRGB(48, 146, 226),
+	Swamp = Color3.fromRGB(46, 176, 132),
 }
 
-local INK = Color3.fromRGB(232, 234, 240)
-local MUTED = Color3.fromRGB(158, 164, 178)
-local PANEL = Color3.fromRGB(24, 26, 33)
+local INK = Color3.fromRGB(74, 48, 34)
+local MUTED = Color3.fromRGB(150, 112, 82)
+local PANEL = Color3.fromRGB(255, 246, 224)
 
 local function new(className, props, children)
 	local instance = Instance.new(className)
@@ -48,6 +48,14 @@ end
 
 local function corner(radius)
 	return new("UICorner", { CornerRadius = UDim.new(0, radius or 10) })
+end
+
+local function stroke(thickness, color)
+	return new("UIStroke", {
+		Thickness = thickness or 3,
+		Color = color or Color3.fromRGB(74, 48, 34),
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+	})
 end
 
 local function padding(px)
@@ -92,11 +100,11 @@ local screen = new("ScreenGui", {
 local squadPanel = new("Frame", {
 	Name = "SquadPanel",
 	BackgroundColor3 = PANEL,
-	BackgroundTransparency = 0.08,
+	BackgroundTransparency = 0,
 	Position = UDim2.fromOffset(16, 16),
 	Size = UDim2.fromOffset(250, 232),
 	Parent = screen,
-}, { corner(12), padding(12) })
+}, { corner(14), stroke(3), padding(12) })
 
 new("UIListLayout", {
 	Padding = UDim.new(0, 6),
@@ -136,11 +144,11 @@ local function buildCard(gnome, order)
 
 	local card = new("Frame", {
 		Name = gnome.name,
-		BackgroundColor3 = Color3.fromRGB(36, 39, 48),
+		BackgroundColor3 = Color3.fromRGB(255, 232, 186),
 		Size = UDim2.new(1, 0, 0, 46),
 		LayoutOrder = order,
 		Parent = cardHolder,
-	}, { corner(8) })
+	}, { corner(10), stroke(2) })
 
 	new("Frame", {
 		Name = "Accent",
@@ -185,11 +193,11 @@ end
 local stagePanel = new("Frame", {
 	Name = "StagePanel",
 	BackgroundColor3 = PANEL,
-	BackgroundTransparency = 0.08,
+	BackgroundTransparency = 0,
 	Position = UDim2.fromOffset(16, 260),
 	Size = UDim2.fromOffset(250, 138),
 	Parent = screen,
-}, { corner(12), padding(12) })
+}, { corner(14), stroke(3), padding(12) })
 
 new("UIListLayout", {
 	Padding = UDim.new(0, 5),
@@ -217,13 +225,13 @@ local stageEnemy = label({
 	Parent = stagePanel,
 	Text = "",
 	TextSize = 12,
-	TextColor3 = Color3.fromRGB(255, 150, 130),
+	TextColor3 = Color3.fromRGB(214, 66, 54),
 	LayoutOrder = 2,
 })
 local stageHint = label({
 	Parent = stagePanel,
 	Text = "Walk up the road and hold E at the stone.",
-	TextColor3 = Color3.fromRGB(140, 220, 190),
+	TextColor3 = Color3.fromRGB(28, 158, 118),
 	TextSize = 11,
 	TextWrapped = true,
 	Size = UDim2.new(1, 0, 0, 30),
@@ -237,13 +245,13 @@ local stageHint = label({
 local overlay = new("Frame", {
 	Name = "Battle",
 	BackgroundColor3 = PANEL,
-	BackgroundTransparency = 0.06,
+	BackgroundTransparency = 0,
 	AnchorPoint = Vector2.new(0.5, 0),
 	Position = UDim2.new(0.5, 0, 0, 24),
 	Size = UDim2.fromOffset(420, 214),
 	Visible = false,
 	Parent = screen,
-}, { corner(14), padding(14) })
+}, { corner(16), stroke(3), padding(14) })
 
 local battleTitle = label({
 	Parent = overlay,
@@ -273,23 +281,23 @@ local function buildBar(parent, y, barColor, nameText)
 		Size = UDim2.new(0.6, 0, 0, 14),
 	})
 	local track = new("Frame", {
-		BackgroundColor3 = Color3.fromRGB(48, 51, 60),
+		BackgroundColor3 = Color3.fromRGB(236, 214, 176),
 		BorderSizePixel = 0,
 		Position = UDim2.fromOffset(0, y + 17),
 		Size = UDim2.new(1, 0, 0, 12),
 		Parent = parent,
-	}, { corner(6) })
+	}, { corner(6), stroke(2) })
 	local fill = new("Frame", {
 		BackgroundColor3 = barColor,
 		BorderSizePixel = 0,
 		Size = UDim2.fromScale(1, 1),
 		Parent = track,
-	}, { corner(6) })
+	}, { corner(6), stroke(2) })
 	return { name = nameLabel, value = valueLabel, fill = fill }
 end
 
-local enemyBar = buildBar(overlay, 28, Color3.fromRGB(226, 88, 76), "Enemy")
-local squadBar = buildBar(overlay, 80, Color3.fromRGB(112, 200, 132), "Your squad")
+local enemyBar = buildBar(overlay, 28, Color3.fromRGB(246, 82, 74), "Enemy")
+local squadBar = buildBar(overlay, 80, Color3.fromRGB(74, 202, 96), "Your squad")
 
 local logBox = label({
 	Parent = overlay,
@@ -357,13 +365,13 @@ StageState.OnClientEvent:Connect(function(state)
 	if state.cooldown and state.cooldown > 0 then
 		stageHint.Text =
 			string.format("Road closed. %ds until you can push again.", math.ceil(state.cooldown))
-		stageHint.TextColor3 = Color3.fromRGB(255, 150, 130)
+		stageHint.TextColor3 = Color3.fromRGB(214, 66, 54)
 	elseif state.busy then
 		stageHint.Text = "Another challenger is at the gate."
-		stageHint.TextColor3 = Color3.fromRGB(230, 200, 130)
+		stageHint.TextColor3 = Color3.fromRGB(206, 138, 24)
 	else
 		stageHint.Text = "Walk up the road and hold E at the stone."
-		stageHint.TextColor3 = Color3.fromRGB(140, 220, 190)
+		stageHint.TextColor3 = Color3.fromRGB(28, 158, 118)
 	end
 end)
 
@@ -394,10 +402,10 @@ FightEvent.OnClientEvent:Connect(function(payload)
 		setBar(squadBar, payload.squadHealth, fightState.squadMax)
 		if payload.won then
 			resultLabel.Text = "GATE CLEARED"
-			resultLabel.TextColor3 = Color3.fromRGB(126, 226, 152)
+			resultLabel.TextColor3 = Color3.fromRGB(46, 178, 74)
 		else
 			resultLabel.Text = "DEFEATED"
-			resultLabel.TextColor3 = Color3.fromRGB(240, 106, 92)
+			resultLabel.TextColor3 = Color3.fromRGB(232, 62, 52)
 		end
 		task.delay(3.5, function()
 			overlay.Visible = false

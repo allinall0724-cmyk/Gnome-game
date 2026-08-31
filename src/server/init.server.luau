@@ -28,6 +28,7 @@ local STAGE = Stages.Get(1)
 -- joins mid-build drops through the void.
 Players.CharacterAutoLoads = false
 
+World.ApplyStyle()
 World.Build()
 
 -- The starter squad: three plain garden gnomes, one per biome.

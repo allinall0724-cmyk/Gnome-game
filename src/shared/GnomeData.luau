@@ -17,11 +17,11 @@ local GnomeData = {}
 
 -- Every gnome wears the classic red pointed hat and white beard; the tunic
 -- colour is what tells the biomes apart at a glance.
-local HAT = Color3.fromRGB(163, 46, 46)
-local SKIN = Color3.fromRGB(234, 184, 146)
-local BEARD = Color3.fromRGB(238, 238, 234)
-local BOOT = Color3.fromRGB(86, 56, 38)
-local BELT = Color3.fromRGB(58, 40, 28)
+local HAT = Color3.fromRGB(238, 68, 68)
+local SKIN = Color3.fromRGB(255, 208, 172)
+local BEARD = Color3.fromRGB(252, 252, 250)
+local BOOT = Color3.fromRGB(140, 88, 52)
+local BELT = Color3.fromRGB(96, 62, 40)
 
 GnomeData.Gnomes = {
 	pip = {
@@ -35,7 +35,7 @@ GnomeData.Gnomes = {
 		sellValue = 25,
 		colors = {
 			hat = HAT,
-			tunic = Color3.fromRGB(74, 118, 62),
+			tunic = Color3.fromRGB(92, 198, 96),
 			skin = SKIN,
 			beard = BEARD,
 			boot = BOOT,
@@ -54,8 +54,8 @@ GnomeData.Gnomes = {
 		sellValue = 25,
 		colors = {
 			hat = HAT,
-			tunic = Color3.fromRGB(198, 164, 105),
-			skin = Color3.fromRGB(222, 168, 128),
+			tunic = Color3.fromRGB(250, 202, 92),
+			skin = Color3.fromRGB(255, 200, 162),
 			beard = BEARD,
 			boot = BOOT,
 			belt = BELT,
@@ -73,8 +73,8 @@ GnomeData.Gnomes = {
 		sellValue = 25,
 		colors = {
 			hat = HAT,
-			tunic = Color3.fromRGB(94, 108, 128),
-			skin = Color3.fromRGB(226, 176, 140),
+			tunic = Color3.fromRGB(104, 168, 244),
+			skin = Color3.fromRGB(255, 212, 176),
 			beard = BEARD,
 			boot = BOOT,
 			belt = BELT,
