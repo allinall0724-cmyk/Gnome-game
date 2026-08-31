@@ -100,20 +100,22 @@ function Parts.Cone(parent, opts)
 	end
 end
 
--- Anchors the root, welds every other part to it, and sets it as the
--- PrimaryPart. After this the whole model can be moved or tweened by
--- driving the root alone.
-function Parts.Rig(model, root)
-	root.Anchored = true
-	model.PrimaryPart = root
+--[[
+	Makes the model a rigid, fully anchored assembly and marks the root as its
+	PrimaryPart.
 
+	Everything is anchored and nothing is welded on purpose. Welding dozens of
+	unanchored parts to a moving anchored root makes the physics engine
+	reposition every one of them each step, a frame behind whatever moved the
+	root, which is exactly what reads as choppy. Anchored parts moved together
+	by Model:PivotTo() skip physics entirely and land on the same frame.
+]]
+function Parts.Rig(model, root)
+	model.PrimaryPart = root
 	for _, part in ipairs(model:GetDescendants()) do
-		if part:IsA("BasePart") and part ~= root then
-			part.Anchored = false
-			local weld = Instance.new("WeldConstraint")
-			weld.Part0 = root
-			weld.Part1 = part
-			weld.Parent = root
+		if part:IsA("BasePart") then
+			part.Anchored = true
+			part.CanCollide = false
 		end
 	end
 end

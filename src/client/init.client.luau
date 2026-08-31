@@ -15,7 +15,9 @@ local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
-local Stages = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Stages"))
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Stages = require(Shared:WaitForChild("Stages"))
+local Layout = require(Shared:WaitForChild("Layout"))
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local RequestState = Remotes:WaitForChild("RequestState")
@@ -379,6 +381,219 @@ StageState.OnClientEvent:Connect(function(state)
 	end
 end)
 
+--------------------------------------------------------------------
+-- Animation
+--------------------------------------------------------------------
+--[[
+	Every gnome and the creature are posed here, once per frame.
+
+	The server no longer moves any model. It only reports what happened, and
+	this drives the visuals: each actor eases toward a target pose with a
+	framerate-independent lerp and layers idle breathing and one-shot hops on
+	top. Because the models are fully anchored, Model:PivotTo lands all their
+	parts on the same frame with no physics step in between, which is what
+	keeps the motion continuous instead of stepping.
+]]
+
+local EASE = 6 -- how tightly an actor chases its target pose
+local HOP_TIME = 0.42
+
+local actors = {} -- [Model] = pose/animation state
+
+local function actorFor(model, home)
+	local state = actors[model]
+	if not state then
+		state = {
+			target = home,
+			smooth = home,
+			phase = math.random() * math.pi * 2,
+			hopAt = -1,
+			hopReach = 0,
+			bob = 0.09,
+		}
+		actors[model] = state
+	end
+	return state
+end
+
+-- A single forward-and-back arc, shaped so it starts and ends at rest.
+local function hop(state, reach)
+	state.hopAt = os.clock()
+	state.hopReach = reach
+end
+
+local function highlightOf(model)
+	local highlight = model:FindFirstChildOfClass("Highlight")
+	if not highlight then
+		highlight = Instance.new("Highlight")
+		highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+		highlight.OutlineTransparency = 1
+		highlight.FillTransparency = 1
+		highlight.Parent = model
+	end
+	return highlight
+end
+
+local function flash(model, color)
+	if not (model and model.Parent) then
+		return
+	end
+	local highlight = highlightOf(model)
+	highlight.FillColor = color
+	highlight.FillTransparency = 0.3
+	TweenService:Create(highlight, TweenInfo.new(0.45, Enum.EasingStyle.Sine), {
+		FillTransparency = 1,
+	}):Play()
+end
+
+local gnomeModels = {}
+local enemyModel = nil
+
+local function startAnimation()
+	local map = Workspace:WaitForChild("Map", 30)
+	if not map then
+		return
+	end
+	local gnomeFolder = map:WaitForChild("Gnomes", 30)
+
+	local function refresh()
+		gnomeModels = {}
+		if gnomeFolder then
+			for _, model in ipairs(gnomeFolder:GetChildren()) do
+				if model:IsA("Model") and model.PrimaryPart then
+					table.insert(gnomeModels, model)
+				end
+			end
+		end
+		-- the creature is replaced after each win, so re-find it each time
+		enemyModel = nil
+		for _, child in ipairs(map:GetChildren()) do
+			if child:IsA("Model") and child ~= gnomeFolder and child.PrimaryPart then
+				enemyModel = child
+			end
+		end
+	end
+
+	refresh()
+	map.ChildAdded:Connect(refresh)
+	map.ChildRemoved:Connect(refresh)
+	if gnomeFolder then
+		gnomeFolder.ChildAdded:Connect(refresh)
+	end
+
+	local veil = map:FindFirstChild("GateVeil")
+
+	RunService.RenderStepped:Connect(function(dt)
+		local now = os.clock()
+		local alpha = 1 - math.exp(-dt * EASE)
+
+		for index, model in ipairs(gnomeModels) do
+			local home = Layout.PlotPose(index)
+			if home and model.PrimaryPart then
+				local state = actorFor(model, home)
+				state.smooth = state.smooth:Lerp(state.target, alpha)
+
+				local bob = math.sin(now * 2.0 + state.phase) * state.bob
+				local sway = math.sin(now * 1.25 + state.phase) * 0.035
+				local lean = math.sin(now * 1.7 + state.phase) * 0.02
+
+				local reach = 0
+				local lift = 0
+				local elapsed = now - state.hopAt
+				if state.hopAt > 0 and elapsed < HOP_TIME then
+					local t = elapsed / HOP_TIME
+					local arc = math.sin(t * math.pi)
+					reach = arc * state.hopReach
+					lift = arc * 0.55
+				end
+
+				model:PivotTo(
+					state.smooth * CFrame.new(0, bob + lift, -reach) * CFrame.Angles(lean, sway, 0)
+				)
+			end
+		end
+
+		if enemyModel and enemyModel.PrimaryPart then
+			local state = actorFor(enemyModel, CFrame.new(Layout.ENEMY_POSITION))
+			state.smooth = state.smooth:Lerp(state.target, alpha)
+
+			local bob = math.sin(now * 1.5) * 0.14
+			local sway = math.sin(now * 0.9) * 0.05
+
+			local reach = 0
+			local elapsed = now - state.hopAt
+			if state.hopAt > 0 and elapsed < HOP_TIME then
+				reach = math.sin(elapsed / HOP_TIME * math.pi) * state.hopReach
+			end
+
+			enemyModel:PivotTo(
+				state.smooth * CFrame.new(0, bob, -reach) * CFrame.Angles(0, sway, 0)
+			)
+		end
+
+		if veil and veil.Parent then
+			veil.Transparency = 0.6 + math.sin(now * 1.6) * 0.09
+		end
+	end)
+end
+
+task.spawn(startAnimation)
+
+--------------------------------------------------------------------
+-- Fight choreography
+--------------------------------------------------------------------
+
+local function marchToArena()
+	for index, model in ipairs(gnomeModels) do
+		local pose = Layout.ArenaPose(index)
+		if pose then
+			actorFor(model, pose).target = pose
+		end
+	end
+end
+
+local function marchHome()
+	for index, model in ipairs(gnomeModels) do
+		local pose = Layout.PlotPose(index)
+		if pose then
+			actorFor(model, pose).target = pose
+		end
+	end
+end
+
+local function squadStrikes()
+	for index, model in ipairs(gnomeModels) do
+		local pose = Layout.ArenaPose(index) or Layout.PlotPose(index)
+		hop(actorFor(model, pose), 1.7)
+	end
+	if enemyModel then
+		flash(enemyModel, Color3.fromRGB(255, 96, 80))
+	end
+end
+
+local function enemyStrikes()
+	if enemyModel then
+		hop(actorFor(enemyModel, CFrame.new(Layout.ENEMY_POSITION)), 2.6)
+	end
+	for index, model in ipairs(gnomeModels) do
+		local pose = Layout.ArenaPose(index) or Layout.PlotPose(index)
+		actorFor(model, pose)
+		flash(model, Color3.fromRGB(255, 120, 120))
+	end
+end
+
+local function sinkEnemy()
+	if enemyModel then
+		local state = actorFor(enemyModel, CFrame.new(Layout.ENEMY_POSITION))
+		state.target = CFrame.new(Layout.ENEMY_POSITION) * CFrame.new(0, -9, 0)
+	end
+end
+
+--------------------------------------------------------------------
+-- Fight events
+--------------------------------------------------------------------
+-- Wired last: these handlers call the choreography defined above.
+
 FightEvent.OnClientEvent:Connect(function(payload)
 	if payload.phase == "start" then
 		logLines = {}
@@ -393,9 +608,14 @@ FightEvent.OnClientEvent:Connect(function(payload)
 		logBox.Text = string.format("%s blocks the gate.", payload.enemyName)
 		resultLabel.Text = ""
 		overlay.Visible = true
+		marchToArena()
 	elseif payload.phase == "tick" then
 		setBar(enemyBar, payload.enemyHealth, fightState.enemyMax)
 		setBar(squadBar, payload.squadHealth, fightState.squadMax)
+		squadStrikes()
+		if (payload.enemyHit or 0) > 0 then
+			task.delay(Stages.TICK * 0.45, enemyStrikes)
+		end
 		table.insert(logLines, payload.log)
 		while #logLines > 3 do
 			table.remove(logLines, 1)
@@ -404,7 +624,9 @@ FightEvent.OnClientEvent:Connect(function(payload)
 	elseif payload.phase == "finish" then
 		setBar(enemyBar, payload.enemyHealth, fightState.enemyMax)
 		setBar(squadBar, payload.squadHealth, fightState.squadMax)
+		marchHome()
 		if payload.won then
+			sinkEnemy()
 			resultLabel.Text = "GATE CLEARED"
 			resultLabel.TextColor3 = Color3.fromRGB(46, 178, 74)
 		else
@@ -418,87 +640,3 @@ FightEvent.OnClientEvent:Connect(function(payload)
 end)
 
 RequestState:FireServer()
-
---------------------------------------------------------------------
--- Local motion
---------------------------------------------------------------------
---[[
-	The server drives the gnomes by tweening their anchored roots, but an
-	anchored part's CFrame only replicates a handful of times a second, so
-	whatever the server does arrives as a series of jumps. That is what reads
-	as choppy.
-
-	These run on the client every frame instead. Each one tracks the pose the
-	server last sent and layers smooth motion on top of it, so the server stays
-	authoritative over where things are while the client fills in the frames
-	between updates.
-]]
-
-local function startLocalMotion()
-	local map = Workspace:WaitForChild("Map", 30)
-	if not map then
-		return
-	end
-
-	local gnomes = map:WaitForChild("Gnomes", 30)
-	local veil = map:FindFirstChild("GateVeil")
-	local motion = {}
-
-	local function stateFor(model)
-		local root = model.PrimaryPart or model:FindFirstChild("Root")
-		if not (root and root:IsA("BasePart")) then
-			return nil, nil
-		end
-		local state = motion[model]
-		if not state then
-			state = {
-				target = root.CFrame, -- newest pose the server sent
-				smooth = root.CFrame, -- what we actually draw, chasing target
-				applied = nil,
-				phase = math.random() * math.pi * 2,
-			}
-			motion[model] = state
-		end
-		-- If the root no longer holds what we wrote last frame, replication
-		-- delivered a new server pose. Take it as the target rather than
-		-- snapping to it, so the gaps between updates get filled in.
-		if
-			not state.applied
-			or (state.applied.Position - root.CFrame.Position).Magnitude > 0.0015
-		then
-			state.target = root.CFrame
-		end
-		return root, state
-	end
-
-	RunService.RenderStepped:Connect(function(dt)
-		local now = os.clock()
-		-- framerate-independent approach rate
-		local alpha = 1 - math.exp(-dt * 11)
-
-		if gnomes then
-			for _, model in ipairs(gnomes:GetChildren()) do
-				if model:IsA("Model") then
-					local root, state = stateFor(model)
-					if root then
-						state.smooth = state.smooth:Lerp(state.target, alpha)
-						local bob = math.sin(now * 2.1 + state.phase) * 0.09
-						local sway = math.sin(now * 1.3 + state.phase) * 0.03
-						local pose = state.smooth
-							* CFrame.new(0, bob, 0)
-							* CFrame.Angles(0, sway, 0)
-						root.CFrame = pose
-						state.applied = pose
-					end
-				end
-			end
-		end
-
-		-- the gate shimmer is client-only, so it can just breathe on its own
-		if veil and veil.Parent then
-			veil.Transparency = 0.6 + math.sin(now * 1.6) * 0.09
-		end
-	end)
-end
-
-task.spawn(startLocalMotion)

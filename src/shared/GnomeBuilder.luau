@@ -34,123 +34,153 @@ function GnomeBuilder.Gnome(def)
 		Parent = model,
 	})
 
-	-- boots
+	-- Cartoon proportions: a big head on a stubby body reads as friendly,
+	-- where realistic proportions just read as small.
+
+	-- boots, splayed outward like a clown's
 	for _, side in ipairs({ -1, 1 }) do
-		Parts.Block(model, {
+		Parts.Ball(model, {
 			name = "Boot",
-			size = Vector3.new(0.5, 0.3, 0.78),
-			x = side * 0.31,
-			y = 0.15,
-			z = -0.06,
+			d = 0.72,
+			x = side * 0.38,
+			y = 0.3,
+			z = -0.12,
 			color = c.boot,
-			material = Enum.Material.SmoothPlastic,
 		})
 	end
 
-	-- tunic: a frustum, wide at the hem and narrow at the shoulders
+	-- tunic: a wide bell so the gnome looks bottom-heavy and stable
 	Parts.Cone(model, {
 		name = "Tunic",
-		baseY = 0.3,
-		radius = 0.74,
-		tipRadius = 0.42,
-		height = 1.2,
-		slices = 12,
+		baseY = 0.36,
+		radius = 0.92,
+		tipRadius = 0.46,
+		height = 1.0,
+		slices = 8,
 		color = c.tunic,
-		material = Enum.Material.SmoothPlastic,
 	})
 
 	Parts.Disc(model, {
 		name = "Belt",
-		radius = 0.62,
-		height = 0.17,
-		y = 0.95,
+		radius = 0.7,
+		height = 0.2,
+		y = 0.86,
 		color = c.belt,
-		material = Enum.Material.SmoothPlastic,
 	})
 	Parts.Block(model, {
 		name = "Buckle",
-		size = Vector3.new(0.26, 0.22, 0.12),
-		y = 0.95,
-		z = -0.58,
-		color = Color3.fromRGB(214, 179, 92),
-		material = Enum.Material.SmoothPlastic,
+		size = Vector3.new(0.3, 0.26, 0.14),
+		y = 0.86,
+		z = -0.66,
+		color = Color3.fromRGB(255, 208, 92),
 	})
 
-	-- arms, splayed slightly out from the body
+	-- stubby arms with big mitten hands
 	for _, side in ipairs({ -1, 1 }) do
 		Parts.New({
 			Name = "Arm",
 			Shape = Enum.PartType.Cylinder,
-			Size = Vector3.new(0.85, 0.33, 0.33),
+			Size = Vector3.new(0.7, 0.36, 0.36),
 			Color = c.tunic,
-			Material = Enum.Material.SmoothPlastic,
-			CFrame = CFrame.new(side * 0.66, 1.0, 0)
-				* CFrame.Angles(0, 0, math.pi / 2 + side * 0.22),
+			CFrame = CFrame.new(side * 0.76, 1.0, 0)
+				* CFrame.Angles(0, 0, math.pi / 2 + side * 0.3),
 			Parent = model,
 		})
-		Parts.Ball(model, {
-			name = "Hand",
-			d = 0.31,
-			x = side * 0.79,
-			y = 0.58,
-			color = c.skin,
-		})
+		Parts.Ball(model, { name = "Hand", d = 0.42, x = side * 0.92, y = 0.66, color = c.skin })
 	end
 
-	-- head
-	Parts.Ball(model, { name = "Head", d = 0.92, y = 1.8, color = c.skin })
-	Parts.Ball(model, { name = "Nose", d = 0.3, y = 1.78, z = -0.42, color = c.skin })
+	-- oversized head
+	Parts.Ball(model, { name = "Head", d = 1.34, y = 1.92, color = c.skin })
+
+	-- big round nose, right in the middle of the face
+	Parts.Ball(
+		model,
+		{ name = "Nose", d = 0.46, y = 1.84, z = -0.62, color = Color3.fromRGB(255, 166, 150) }
+	)
+
+	-- googly eyes: a white ball with a pupil sitting proud of it
 	for _, side in ipairs({ -1, 1 }) do
 		Parts.Ball(model, {
 			name = "Eye",
-			d = 0.15,
-			x = side * 0.17,
-			y = 1.98,
-			z = -0.40,
-			color = Color3.fromRGB(30, 26, 24),
+			d = 0.44,
+			x = side * 0.29,
+			y = 2.16,
+			z = -0.5,
+			color = Color3.fromRGB(255, 255, 255),
+		})
+		Parts.Ball(model, {
+			name = "Pupil",
+			d = 0.22,
+			x = side * 0.31,
+			y = 2.14,
+			z = -0.66,
+			color = Color3.fromRGB(26, 22, 22),
+		})
+		-- a bushy eyebrow, tilted for a permanently surprised look
+		Parts.Block(model, {
+			name = "Brow",
+			size = Vector3.new(0.42, 0.12, 0.16),
+			x = side * 0.3,
+			y = 2.44,
+			z = -0.54,
+			rot = CFrame.Angles(0, 0, side * 0.28),
+			color = c.beard,
+		})
+		-- rosy cheek
+		Parts.Ball(model, {
+			name = "Cheek",
+			d = 0.3,
+			x = side * 0.5,
+			y = 1.78,
+			z = -0.44,
+			color = Color3.fromRGB(255, 148, 148),
 		})
 	end
 
-	-- beard, a cone hanging from under the nose
+	-- a wide grin, drawn as an arc of little blocks
+	for i = -2, 2 do
+		local t = i / 2
+		Parts.Block(model, {
+			name = "Smile",
+			size = Vector3.new(0.17, 0.12, 0.12),
+			x = t * 0.34,
+			y = 1.56 + t * t * 0.12,
+			z = -0.58 + t * t * 0.07,
+			rot = CFrame.Angles(0, 0, -t * 0.5),
+			color = Color3.fromRGB(120, 52, 44),
+		})
+	end
+
+	-- beard, hanging under the grin
 	Parts.Cone(model, {
 		name = "Beard",
-		baseY = 1.72,
-		radius = 0.46,
-		height = 0.95,
+		baseY = 1.6,
+		radius = 0.56,
+		height = 0.85,
 		dir = -1,
-		slices = 14,
-		z = -0.18,
+		slices = 8,
+		z = -0.22,
 		color = c.beard,
-		material = Enum.Material.SmoothPlastic,
-	})
-	Parts.Disc(model, {
-		name = "Moustache",
-		radius = 0.22,
-		height = 0.5,
-		y = 1.66,
-		z = -0.4,
-		color = c.beard,
-		material = Enum.Material.SmoothPlastic,
 	})
 
-	-- the hat: brim plus a tall pointed cone
+	-- a big floppy hat, taller than the gnome's head
 	Parts.Disc(model, {
 		name = "HatBrim",
-		radius = 0.7,
-		height = 0.14,
-		y = 2.06,
+		radius = 0.92,
+		height = 0.16,
+		y = 2.46,
 		color = c.hat,
-		material = Enum.Material.SmoothPlastic,
 	})
 	Parts.Cone(model, {
 		name = "Hat",
-		baseY = 2.04,
-		radius = 0.63,
-		height = 1.3,
-		slices = 20,
+		baseY = 2.44,
+		radius = 0.84,
+		height = 1.5,
+		slices = 12,
 		color = c.hat,
-		material = Enum.Material.SmoothPlastic,
 	})
+	-- a pom-pom on the tip
+	Parts.Ball(model, { name = "Pom", d = 0.34, y = 3.98, color = c.beard })
 
 	Parts.Rig(model, root)
 	Parts.Nameplate(
@@ -161,7 +191,7 @@ function GnomeBuilder.Gnome(def)
 		BIOME_COLOR[def.biome]
 	)
 	-- lift the nameplate above the hat rather than the root
-	model.Nameplate.StudsOffsetWorldSpace = Vector3.new(0, 3.9, 0)
+	model.Nameplate.StudsOffsetWorldSpace = Vector3.new(0, 4.5, 0)
 
 	model:SetAttribute("GnomeId", def.id)
 	model:SetAttribute("Biome", def.biome)

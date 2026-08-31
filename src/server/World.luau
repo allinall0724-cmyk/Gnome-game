@@ -13,23 +13,15 @@ local Workspace = game:GetService("Workspace")
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local GnomeBuilder = require(Shared:WaitForChild("GnomeBuilder"))
 local Parts = require(Shared:WaitForChild("Parts"))
+local Layout = require(Shared:WaitForChild("Layout"))
 
 local World = {}
 
-World.PLOT_SLOTS = {
-	Vector3.new(-5, 0.5, 2),
-	Vector3.new(0, 0.5, 2),
-	Vector3.new(5, 0.5, 2),
-}
-
--- Where the gnomes line up when a gate fight starts.
-World.ARENA_SLOTS = {
-	Vector3.new(-4.5, 0.3, 38),
-	Vector3.new(0, 0.3, 38),
-	Vector3.new(4.5, 0.3, 38),
-}
-
-World.ENEMY_POSITION = Vector3.new(0, 0.3, 46)
+-- Poses live in the shared Layout module so the client animates between the
+-- same points the server places things at.
+World.PLOT_SLOTS = Layout.PLOT_SLOTS
+World.ARENA_SLOTS = Layout.ARENA_SLOTS
+World.ENEMY_POSITION = Layout.ENEMY_POSITION
 
 -- Filled in at runtime by Build, PlaceGnomes and SpawnEnemy.
 World.Map = nil :: Folder?

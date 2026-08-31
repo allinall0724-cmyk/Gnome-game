@@ -10,7 +10,6 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Stages = require(Shared:WaitForChild("Stages"))
@@ -28,60 +27,14 @@ local rng = Random.new()
 local activeFight = nil -- the player currently pushing the gate
 local cooldownUntil = {} -- [player] = os.clock() deadline after a loss
 
--- Durations are generous and eased on both ends. Anchored-part CFrames
--- replicate slowly, so short abrupt tweens arrive as a jump; longer arcs give
--- the client something continuous to interpolate along.
-local HOP = TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
-local RETURN = TweenInfo.new(0.34, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-local MARCH = TweenInfo.new(1.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-local FLASH_IN = TweenInfo.new(0.09, Enum.EasingStyle.Sine)
-local FLASH_OUT = TweenInfo.new(0.38, Enum.EasingStyle.Sine)
+--[[
+	No model animation happens here any more.
 
-local function highlightOf(model, color)
-	local highlight = model:FindFirstChildOfClass("Highlight")
-	if not highlight then
-		highlight = Instance.new("Highlight")
-		highlight.DepthMode = Enum.HighlightDepthMode.Occluded
-		highlight.OutlineTransparency = 1
-		highlight.Parent = model
-	end
-	highlight.FillColor = color
-	highlight.FillTransparency = 1
-	return highlight
-end
-
-local function flash(model, color)
-	local highlight = highlightOf(model, color)
-	TweenService:Create(highlight, FLASH_IN, { FillTransparency = 0.35 }):Play()
-	task.delay(0.09, function()
-		if highlight.Parent then
-			TweenService:Create(highlight, FLASH_OUT, { FillTransparency = 1 }):Play()
-		end
-	end)
-end
-
--- A short forward hop, used for both the squad's swings and the creature's.
-local function lunge(model, home, distance)
-	local root = model.PrimaryPart
-	if not root then
-		return
-	end
-	TweenService:Create(root, HOP, {
-		CFrame = home * CFrame.new(0, 0.6, -distance),
-	}):Play()
-	task.delay(0.22, function()
-		if root.Parent then
-			TweenService:Create(root, RETURN, { CFrame = home }):Play()
-		end
-	end)
-end
-
-local function moveTo(model, cframe)
-	local root = model.PrimaryPart
-	if root then
-		TweenService:Create(root, MARCH, { CFrame = cframe }):Play()
-	end
-end
+	Moving the models from the server meant every pose change had to survive
+	replication before it could be drawn, which is what made the fight look
+	choppy. The server now only decides what happened; the client owns how it
+	looks and animates at frame rate from these events.
+]]
 
 function GateService.IsBusy()
 	return activeFight ~= nil
@@ -120,9 +73,6 @@ function GateService.Fight(player, squad, stage)
 
 	activeFight = player
 
-	local enemy = World.Enemy
-	local enemyHome = CFrame.new(World.ENEMY_POSITION)
-
 	local squadPower, squadMaxHealth = 0, 0
 	for _, entry in ipairs(squad) do
 		squadPower += entry.def.power
@@ -131,14 +81,6 @@ function GateService.Fight(player, squad, stage)
 
 	local squadHealth = squadMaxHealth
 	local enemyHealth = stage.enemyHealth
-
-	-- march the gnomes into the arena, facing the creature
-	local homes = {}
-	for index, entry in ipairs(squad) do
-		local slot = World.ARENA_SLOTS[index]
-		homes[index] = CFrame.new(slot) * CFrame.Angles(0, math.pi, 0)
-		moveTo(entry.model, homes[index])
-	end
 
 	local names = {}
 	for _, entry in ipairs(squad) do
@@ -173,13 +115,6 @@ function GateService.Fight(player, squad, stage)
 		local squadHit = math.max(1, math.floor(roll(squadPower * Stages.TICK) + 0.5))
 		enemyHealth = math.max(0, enemyHealth - squadHit)
 
-		for index, entry in ipairs(squad) do
-			lunge(entry.model, homes[index], 1.6)
-		end
-		if enemy then
-			flash(enemy, Color3.fromRGB(255, 96, 80))
-		end
-
 		local log = string.format("Your squad hits %s for %d.", stage.enemyName, squadHit)
 
 		if enemyHealth <= 0 then
@@ -187,6 +122,8 @@ function GateService.Fight(player, squad, stage)
 				phase = "tick",
 				enemyHealth = 0,
 				squadHealth = squadHealth,
+				squadHit = squadHit,
+				enemyHit = 0,
 				log = log,
 			})
 			won = true
@@ -197,23 +134,14 @@ function GateService.Fight(player, squad, stage)
 		local enemyHit = math.max(1, math.floor(roll(stage.enemyPower * Stages.TICK) + 0.5))
 		squadHealth = math.max(0, squadHealth - enemyHit)
 
-		task.delay(Stages.TICK * 0.45, function()
-			if enemy and enemy.Parent then
-				lunge(enemy, enemyHome, 2.4)
-			end
-			for _, entry in ipairs(squad) do
-				if entry.model.Parent then
-					flash(entry.model, Color3.fromRGB(255, 120, 120))
-				end
-			end
-		end)
-
 		log = log .. string.format("  %s hits back for %d.", stage.enemyName, enemyHit)
 
 		FightEvent:FireClient(player, {
 			phase = "tick",
 			enemyHealth = enemyHealth,
 			squadHealth = squadHealth,
+			squadHit = squadHit,
+			enemyHit = enemyHit,
 			log = log,
 		})
 
@@ -227,26 +155,8 @@ function GateService.Fight(player, squad, stage)
 
 	task.wait(0.6)
 
-	if won then
-		if enemy then
-			-- the creature sinks out of the arena
-			local root = enemy.PrimaryPart
-			if root then
-				TweenService:Create(root, TweenInfo.new(1.2, Enum.EasingStyle.Quad), {
-					CFrame = enemyHome * CFrame.new(0, -8, 0),
-				}):Play()
-			end
-		end
-	else
+	if not won then
 		cooldownUntil[player] = os.clock() + Stages.LOSS_COOLDOWN
-	end
-
-	-- send the gnomes home to the plot
-	for index, entry in ipairs(squad) do
-		local slot = World.PLOT_SLOTS[index]
-		if slot then
-			moveTo(entry.model, CFrame.new(slot))
-		end
 	end
 
 	FightEvent:FireClient(player, {
