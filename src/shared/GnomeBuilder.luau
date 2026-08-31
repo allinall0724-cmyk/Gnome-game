@@ -66,9 +66,10 @@ local function meshGnome(def)
 		mesh.CanQuery = false
 		mesh.CanTouch = false
 		mesh.CastShadow = false
-		-- every mesh was modelled at final coordinates with its base at 0,
-		-- so they all sit at the model origin and line up on their own
-		mesh.CFrame = CFrame.new(0, entry.size.Y / 2, 0)
+		-- each mesh was modelled in place, then re-origined to its own base so
+		-- it can stand alone; entry.origin puts it back where it belongs in the
+		-- assembly, and the mesh renders centred on its CFrame
+		mesh.CFrame = CFrame.new(entry.origin.X, entry.origin.Y + entry.size.Y / 2, entry.origin.Z)
 		mesh.Parent = model
 	end
 
@@ -315,7 +316,7 @@ function GnomeBuilder.Enemy(stage)
 		mesh.CanQuery = false
 		mesh.CanTouch = false
 		mesh.CastShadow = false
-		mesh.CFrame = CFrame.new(0, entry.size.Y / 2, 0)
+		mesh.CFrame = CFrame.new(entry.origin.X, entry.origin.Y + entry.size.Y / 2, entry.origin.Z)
 		mesh.Parent = model
 
 		for _, side in ipairs({ -1, 1 }) do

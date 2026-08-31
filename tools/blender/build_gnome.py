@@ -153,13 +153,21 @@ def _finish(obj, name, colour):
     cy = (min(ys) + max(ys)) / 2.0
     bpy.context.scene.cursor.location = (cx, cy, lo)
     bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
+
+    # Each mesh is modelled at its final position in the assembly, but the
+    # origin has to sit at its own base for the mesh to be usable on its own.
+    # Zeroing the location here would throw that placement away and leave every
+    # piece stacked at the ground, so the offset is recorded and reapplied in
+    # Roblox instead. Blender (x, y, z) -> Roblox (x, z, y).
+    origin = (round(cx, 4), round(lo, 4), round(cy, 4))
+
     obj.location = (0.0, 0.0, 0.0)
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
     tris = len(mesh.polygons)
     if tris > BUDGET:
         raise SystemExit(f"{name}: {tris} tris exceeds budget {BUDGET}")
-    return tris
+    return tris, origin
 
 
 # --- the assets --------------------------------------------------------------
@@ -251,7 +259,7 @@ def build(key):
     fn, colour = ASSETS[key]
     _clear()
     obj = fn()
-    tris = _finish(obj, key, colour)
+    tris, origin = _finish(obj, key, colour)
 
     os.makedirs(BLEND_DIR, exist_ok=True)
     os.makedirs(EXPORT_DIR, exist_ok=True)
@@ -285,6 +293,8 @@ def build(key):
         "tris": tris,
         # reported in Roblox axes: blender (x, y, z) -> roblox (x, z, y)
         "size": [round(dims.x, 3), round(dims.z, 3), round(dims.y, 3)],
+        # base-centre of this piece within the assembly, Roblox axes
+        "origin": [origin[0], origin[1], origin[2]],
         "source": f"assets/blender/{key}.blend",
         "export": f"assets/exports/{key}.fbx",
     }
@@ -321,6 +331,7 @@ def main():
                 "export": res["export"],
                 "tris": res["tris"],
                 "size": res["size"],
+                "origin": res["origin"],
             }
         )
         existing["assets"][res["key"]] = entry

@@ -21,31 +21,37 @@ AssetIds.Meshes = {
 	creature = {
 		id = 0,
 		size = Vector3.new(6.066, 5.305, 3.4),
+		origin = Vector3.new(0.0, -0.005, 0.0),
 		tris = 1428,
 	},
 	gnome_beard = {
 		id = 0,
 		size = Vector3.new(1.12, 3.4, 1.12),
+		origin = Vector3.new(0.0, 0.75, -0.22),
 		tris = 460,
 	},
 	gnome_body = {
 		id = 0,
 		size = Vector3.new(2.295, 1.0, 1.84),
+		origin = Vector3.new(0.0, 0.36, 0.0),
 		tris = 228,
 	},
 	gnome_boots = {
 		id = 0,
 		size = Vector3.new(1.48, 1.05, 1.43),
+		origin = Vector3.new(-0.0, -0.06, -0.015),
 		tris = 808,
 	},
 	gnome_hat = {
 		id = 0,
 		size = Vector3.new(1.84, 1.56, 1.84),
+		origin = Vector3.new(0.0, 2.38, 0.0),
 		tris = 152,
 	},
 	gnome_skin = {
 		id = 0,
 		size = Vector3.new(2.26, 2.14, 1.52),
+		origin = Vector3.new(0.0, 0.45, -0.09),
 		tris = 1440,
 	},
 }

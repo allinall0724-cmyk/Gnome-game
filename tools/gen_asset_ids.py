@@ -78,6 +78,7 @@ def main() -> int:
         entry = assets[key]
         asset_id = int(entry.get("id", 0) or 0)
         size = entry.get("size") or [1, 1, 1]
+        origin = entry.get("origin") or [0, 0, 0]
         tris = entry.get("tris", 0)
         if asset_id == 0:
             pending.append(key)
@@ -85,6 +86,7 @@ def main() -> int:
             f"\t{key} = {{\n"
             f"\t\tid = {asset_id},\n"
             f"\t\tsize = Vector3.new({size[0]}, {size[1]}, {size[2]}),\n"
+            f"\t\torigin = Vector3.new({origin[0]}, {origin[1]}, {origin[2]}),\n"
             f"\t\ttris = {tris},\n"
             f"\t}},\n"
         )
