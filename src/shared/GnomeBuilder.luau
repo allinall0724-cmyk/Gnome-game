@@ -8,6 +8,7 @@
 ]]
 
 local Parts = require(script.Parent.Parts)
+local AssetIds = require(script.Parent.AssetIds)
 
 local GnomeBuilder = {}
 
@@ -20,7 +21,97 @@ local BIOME_COLOR = {
 
 GnomeBuilder.BiomeColor = BIOME_COLOR
 
+local GNOME_MESHES = { "gnome_boots", "gnome_body", "gnome_skin", "gnome_beard", "gnome_hat" }
+
+--[[
+	One MeshPart per colour region, tinted per gnome.
+
+	This is the cheap path: five parts instead of the ~48 the primitive build
+	needs, which matters because the client rewrites every part's CFrame each
+	frame. It is only taken once the meshes have actually been uploaded;
+	AssetIds.Ready is false until then and the primitive build runs instead.
+]]
+local function meshGnome(def)
+	local c = def.colors
+	local tint = {
+		gnome_hat = c.hat,
+		gnome_body = c.tunic,
+		gnome_skin = c.skin,
+		gnome_beard = c.beard,
+		gnome_boots = c.boot,
+	}
+
+	local model = Instance.new("Model")
+	model.Name = def.name
+
+	local root = Parts.New({
+		Name = "Root",
+		Size = Vector3.new(0.4, 0.4, 0.4),
+		Transparency = 1,
+		CFrame = CFrame.new(0, 0, 0),
+		Parent = model,
+	})
+
+	for _, key in ipairs(GNOME_MESHES) do
+		local entry = AssetIds.Meshes[key]
+		local mesh = Instance.new("MeshPart")
+		mesh.Name = key
+		mesh.MeshId = AssetIds.MeshId(key) or ""
+		-- the modelled size, not whatever the importer decided
+		mesh.Size = entry.size
+		mesh.Color = tint[key]
+		mesh.Material = Enum.Material.SmoothPlastic
+		mesh.Anchored = true
+		mesh.CanCollide = false
+		mesh.CanQuery = false
+		mesh.CanTouch = false
+		mesh.CastShadow = false
+		-- every mesh was modelled at final coordinates with its base at 0,
+		-- so they all sit at the model origin and line up on their own
+		mesh.CFrame = CFrame.new(0, entry.size.Y / 2, 0)
+		mesh.Parent = model
+	end
+
+	-- eyes stay as primitives: they are tiny, and keeping them separate means
+	-- the pupils can be tinted and moved without a re-upload
+	for _, side in ipairs({ -1, 1 }) do
+		Parts.Ball(model, {
+			name = "Eye",
+			d = 0.44,
+			x = side * 0.29,
+			y = 2.16,
+			z = -0.5,
+			color = Color3.fromRGB(255, 255, 255),
+		})
+		Parts.Ball(model, {
+			name = "Pupil",
+			d = 0.22,
+			x = side * 0.31,
+			y = 2.14,
+			z = -0.66,
+			color = Color3.fromRGB(26, 22, 22),
+		})
+	end
+
+	Parts.Rig(model, root)
+	Parts.Nameplate(
+		model,
+		root,
+		def.name,
+		string.format("%s  -  %d PWR", def.biome, def.power),
+		BIOME_COLOR[def.biome]
+	)
+	model.Nameplate.StudsOffsetWorldSpace = Vector3.new(0, 4.5, 0)
+	model:SetAttribute("GnomeId", def.id)
+	model:SetAttribute("Biome", def.biome)
+	return model
+end
+
 function GnomeBuilder.Gnome(def)
+	if AssetIds.Ready(GNOME_MESHES) then
+		return meshGnome(def)
+	end
+
 	local c = def.colors
 
 	local model = Instance.new("Model")
@@ -200,6 +291,58 @@ function GnomeBuilder.Gnome(def)
 end
 
 function GnomeBuilder.Enemy(stage)
+	if AssetIds.Ready({ "creature" }) then
+		local entry = AssetIds.Meshes.creature
+		local model = Instance.new("Model")
+		model.Name = stage.enemyName
+
+		local root = Parts.New({
+			Name = "Root",
+			Size = Vector3.new(0.6, 0.6, 0.6),
+			Transparency = 1,
+			CFrame = CFrame.new(0, 0, 0),
+			Parent = model,
+		})
+
+		local mesh = Instance.new("MeshPart")
+		mesh.Name = "Body"
+		mesh.MeshId = AssetIds.MeshId("creature") or ""
+		mesh.Size = entry.size
+		mesh.Color = Color3.fromRGB(122, 214, 92)
+		mesh.Material = Enum.Material.SmoothPlastic
+		mesh.Anchored = true
+		mesh.CanCollide = false
+		mesh.CanQuery = false
+		mesh.CanTouch = false
+		mesh.CastShadow = false
+		mesh.CFrame = CFrame.new(0, entry.size.Y / 2, 0)
+		mesh.Parent = model
+
+		for _, side in ipairs({ -1, 1 }) do
+			Parts.Ball(model, {
+				name = "Eye",
+				d = 0.55,
+				x = side * 0.62,
+				y = 3.35,
+				z = -1.42,
+				color = Color3.fromRGB(255, 214, 92),
+				material = Enum.Material.Neon,
+			})
+		end
+
+		Parts.Rig(model, root)
+		Parts.Nameplate(
+			model,
+			mesh,
+			stage.enemyName,
+			string.format("%d HP  -  %d PWR", stage.enemyHealth, stage.enemyPower),
+			Color3.fromRGB(255, 138, 120)
+		)
+		model.Nameplate.Size = UDim2.fromScale(10, 2.6)
+		model.Nameplate.StudsOffsetWorldSpace = Vector3.new(0, 3.6, 0)
+		return model
+	end
+
 	local BODY = Color3.fromRGB(122, 214, 92)
 	local THORN = Color3.fromRGB(196, 84, 220)
 

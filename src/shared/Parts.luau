@@ -15,6 +15,11 @@ function Parts.New(props)
 	part.CanCollide = false
 	part.CanQuery = false
 	part.CanTouch = false
+	-- Animated models rewrite every part CFrame each frame, and a moving
+	-- shadow caster invalidates the shadow map every time. The flat cartoon
+	-- look does not need per-detail shadows; World re-enables them on the
+	-- large static structures.
+	part.CastShadow = false
 	part.TopSurface = Enum.SurfaceType.Smooth
 	part.BottomSurface = Enum.SurfaceType.Smooth
 	part.Material = Enum.Material.SmoothPlastic

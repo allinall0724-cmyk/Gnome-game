@@ -43,6 +43,8 @@ local function solid(parent, name, size, position, color, material)
 	part.CanCollide = true
 	part.CanQuery = true
 	part.CanTouch = true
+	-- static world geometry never moves, so its shadows are cached once
+	part.CastShadow = true
 	return part
 end
 

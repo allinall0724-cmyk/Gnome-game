@@ -7,3 +7,6 @@ sourcemap.json
 
 # Tooling
 /node_modules/
+
+# Blender autosave backups
+*.blend1

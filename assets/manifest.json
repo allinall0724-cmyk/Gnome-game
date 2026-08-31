@@ -1,0 +1,71 @@
+{
+  "_comment": "Logical asset name -> uploaded Roblox asset ID. Import the FBX in Studio's 3D Importer, copy the resulting MeshId, and paste it here.",
+  "assets": {
+    "gnome_hat": {
+      "id": 0,
+      "source": "assets/blender/gnome_hat.blend",
+      "export": "assets/exports/gnome_hat.fbx",
+      "tris": 152,
+      "size": [
+        1.84,
+        1.56,
+        1.84
+      ]
+    },
+    "gnome_body": {
+      "id": 0,
+      "source": "assets/blender/gnome_body.blend",
+      "export": "assets/exports/gnome_body.fbx",
+      "tris": 228,
+      "size": [
+        2.295,
+        1.0,
+        1.84
+      ]
+    },
+    "gnome_skin": {
+      "id": 0,
+      "source": "assets/blender/gnome_skin.blend",
+      "export": "assets/exports/gnome_skin.fbx",
+      "tris": 1440,
+      "size": [
+        2.26,
+        2.14,
+        1.52
+      ]
+    },
+    "gnome_beard": {
+      "id": 0,
+      "source": "assets/blender/gnome_beard.blend",
+      "export": "assets/exports/gnome_beard.fbx",
+      "tris": 460,
+      "size": [
+        1.12,
+        3.4,
+        1.12
+      ]
+    },
+    "gnome_boots": {
+      "id": 0,
+      "source": "assets/blender/gnome_boots.blend",
+      "export": "assets/exports/gnome_boots.fbx",
+      "tris": 808,
+      "size": [
+        1.48,
+        1.05,
+        1.43
+      ]
+    },
+    "creature": {
+      "id": 0,
+      "source": "assets/blender/creature.blend",
+      "export": "assets/exports/creature.fbx",
+      "tris": 1428,
+      "size": [
+        6.066,
+        5.305,
+        3.4
+      ]
+    }
+  }
+}
