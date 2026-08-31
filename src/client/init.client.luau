@@ -390,19 +390,37 @@ end)
 	The server no longer moves any model. It only reports what happened, and
 	this drives the visuals: each actor eases toward a target pose with a
 	framerate-independent lerp and layers idle breathing and one-shot hops on
-	top. Because the models are fully anchored, Model:PivotTo lands all their
-	parts on the same frame with no physics step in between, which is what
-	keeps the motion continuous instead of stepping.
+	top.
+
+	Poses are applied by writing every part's CFrame absolutely, as
+	pose * savedOffset. Model:PivotTo cannot be used here: it applies the
+	delta between the model's current pivot and the target, so calling it
+	every frame compounds floating-point error until the parts visibly drift
+	apart and the model stops looking like one object. Caching each offset
+	once against the model's build pose keeps the assembly exactly rigid no
+	matter how long it animates.
 ]]
 
 local EASE = 6 -- how tightly an actor chases its target pose
 local HOP_TIME = 0.42
 
-local actors = {} -- [Model] = pose/animation state
+-- Weak keys: the creature model is replaced after every win, so old entries
+-- should not keep the destroyed model alive.
+local actors = setmetatable({}, { __mode = "k" }) -- [Model] = pose/animation state
 
 local function actorFor(model, home)
 	local state = actors[model]
 	if not state then
+		-- capture the rig before anything animates, so the offsets are the
+		-- pose the model was built in
+		local basis = model:GetPivot():Inverse()
+		local rig = {}
+		for _, part in ipairs(model:GetDescendants()) do
+			if part:IsA("BasePart") then
+				table.insert(rig, { part = part, offset = basis * part.CFrame })
+			end
+		end
+
 		state = {
 			target = home,
 			smooth = home,
@@ -410,10 +428,18 @@ local function actorFor(model, home)
 			hopAt = -1,
 			hopReach = 0,
 			bob = 0.09,
+			rig = rig,
 		}
 		actors[model] = state
 	end
 	return state
+end
+
+-- Writes the whole rig in one pass. Absolute, never incremental.
+local function applyPose(state, pose)
+	for _, entry in ipairs(state.rig) do
+		entry.part.CFrame = pose * entry.offset
+	end
 end
 
 -- A single forward-and-back arc, shaped so it starts and ends at rest.
@@ -507,7 +533,8 @@ local function startAnimation()
 					lift = arc * 0.55
 				end
 
-				model:PivotTo(
+				applyPose(
+					state,
 					state.smooth * CFrame.new(0, bob + lift, -reach) * CFrame.Angles(lean, sway, 0)
 				)
 			end
@@ -526,9 +553,7 @@ local function startAnimation()
 				reach = math.sin(elapsed / HOP_TIME * math.pi) * state.hopReach
 			end
 
-			enemyModel:PivotTo(
-				state.smooth * CFrame.new(0, bob, -reach) * CFrame.Angles(0, sway, 0)
-			)
+			applyPose(state, state.smooth * CFrame.new(0, bob, -reach) * CFrame.Angles(0, sway, 0))
 		end
 
 		if veil and veil.Parent then
