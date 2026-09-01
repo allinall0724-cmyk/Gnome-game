@@ -21,6 +21,220 @@ local BIOME_COLOR = {
 GnomeBuilder.BiomeColor = BIOME_COLOR
 
 --[[
+	Builds one gnome's face from its `face` table in GnomeData.
+
+	Each gnome gets a different expression, and every one of them is uneven on
+	purpose: `eyeBias` makes one eye larger than the other, and the mouths all
+	sit slightly off centre. Matched, centred features read as neutral; the
+	mismatch is what makes a face read as goofy rather than blank.
+]]
+local function buildFace(model, def)
+	local c = def.colors
+	local f = def.face
+
+	-- nose first, since the mouth and moustache hang off its position
+	Parts.Blob(model, {
+		name = "Nose",
+		sx = f.nose[1],
+		sy = f.nose[2],
+		sz = f.nose[3],
+		y = 1.94,
+		z = -0.66,
+		color = Color3.fromRGB(255, 168, 152),
+	})
+
+	for index, side in ipairs({ -1, 1 }) do
+		-- one eye bigger than the other; index 2 is the gnome's left
+		local bias = index == 2 and (1 + f.eyeBias) or 1
+		local eyeW = f.eyeW * bias
+		local eyeH = f.eyeH * bias
+
+		Parts.Blob(model, {
+			name = "Eye",
+			sx = eyeW,
+			sy = eyeH,
+			sz = 0.42,
+			x = side * f.spread,
+			y = f.eyeY,
+			z = -0.48,
+			color = Color3.fromRGB(255, 255, 255),
+		})
+
+		-- pupils pull toward the nose by pupilConverge, which is what reads
+		-- as cross-eyed when positive and wall-eyed when negative
+		Parts.Blob(model, {
+			name = "Pupil",
+			sx = eyeW * 0.46,
+			sy = math.min(eyeH * 0.5, 0.26),
+			sz = 0.2,
+			x = side * (f.spread - f.pupilConverge),
+			y = f.eyeY + f.pupilDrop,
+			z = -0.62,
+			color = Color3.fromRGB(32, 26, 26),
+		})
+		Parts.Blob(model, {
+			name = "Glint",
+			sx = 0.09,
+			sy = 0.09,
+			sz = 0.09,
+			x = side * (f.spread + 0.07),
+			y = f.eyeY + 0.07,
+			z = -0.66,
+			color = Color3.fromRGB(255, 255, 255),
+		})
+
+		-- a heavy lid drooping over the top half of the eye
+		if f.lids then
+			Parts.Blob(model, {
+				name = "Lid",
+				sx = eyeW * 1.05,
+				sy = eyeH * 0.62,
+				sz = 0.44,
+				x = side * f.spread,
+				y = f.eyeY + eyeH * 0.28,
+				z = -0.46,
+				rot = CFrame.Angles(0, 0, side * 0.18),
+				color = c.skin,
+			})
+		end
+
+		if not f.unibrow then
+			Parts.Blob(model, {
+				name = "Brow",
+				sx = f.browLen,
+				sy = 0.17,
+				sz = 0.2,
+				x = side * (f.spread + 0.02),
+				y = f.browY,
+				z = -0.5,
+				rot = CFrame.Angles(0, 0, side * f.browTilt),
+				color = c.beard,
+			})
+		end
+
+		if f.freckles then
+			for i = 1, 3 do
+				Parts.Blob(model, {
+					name = "Freckle",
+					sx = 0.08,
+					sy = 0.07,
+					sz = 0.07,
+					x = side * (0.44 + i * 0.09),
+					y = 1.92 + (i % 2) * 0.09,
+					z = -0.5,
+					color = Color3.fromRGB(214, 132, 108),
+				})
+			end
+		end
+
+		Parts.Blob(model, {
+			name = "Cheek",
+			sx = 0.34,
+			sy = 0.26,
+			sz = 0.24,
+			x = side * 0.54,
+			y = 1.86,
+			z = -0.42,
+			color = Color3.fromRGB(255, 150, 150),
+		})
+	end
+
+	-- one continuous brow across both eyes
+	if f.unibrow then
+		Parts.Blob(model, {
+			name = "Unibrow",
+			sx = f.spread * 2 + f.browLen,
+			sy = 0.2,
+			sz = 0.22,
+			y = f.browY,
+			z = -0.5,
+			rot = CFrame.Angles(0, 0, 0.06),
+			color = c.beard,
+		})
+	end
+
+	-- mouths, each sitting a little off centre
+	if f.mouth == "openSmile" then
+		Parts.Blob(model, {
+			name = "Mouth",
+			sx = 0.72,
+			sy = 0.44,
+			sz = 0.3,
+			x = 0.04,
+			y = 1.62,
+			z = -0.58,
+			color = Color3.fromRGB(112, 46, 44),
+		})
+		Parts.Blob(model, {
+			name = "Tongue",
+			sx = 0.42,
+			sy = 0.2,
+			sz = 0.24,
+			x = 0.04,
+			y = 1.53,
+			z = -0.64,
+			color = Color3.fromRGB(238, 116, 132),
+		})
+	elseif f.mouth == "buckTeeth" then
+		Parts.Blob(model, {
+			name = "Mouth",
+			sx = 0.5,
+			sy = 0.2,
+			sz = 0.24,
+			x = -0.05,
+			y = 1.66,
+			z = -0.58,
+			color = Color3.fromRGB(112, 46, 44),
+		})
+		for _, side in ipairs({ -1, 1 }) do
+			Parts.Block(model, {
+				name = "Tooth",
+				size = Vector3.new(0.19, 0.26, 0.1),
+				x = -0.05 + side * 0.1,
+				y = 1.52,
+				z = -0.63,
+				color = Color3.fromRGB(250, 248, 236),
+			})
+		end
+	else -- underbite
+		Parts.Blob(model, {
+			name = "Mouth",
+			sx = 0.92,
+			sy = 0.26,
+			sz = 0.26,
+			x = -0.03,
+			y = 1.6,
+			z = -0.56,
+			rot = CFrame.Angles(0, 0, -0.1),
+			color = Color3.fromRGB(96, 40, 40),
+		})
+		Parts.Block(model, {
+			name = "Tooth",
+			size = Vector3.new(0.17, 0.24, 0.1),
+			x = 0.2,
+			y = 1.68,
+			z = -0.6,
+			color = Color3.fromRGB(250, 248, 236),
+		})
+	end
+
+	-- moustache tufts, tucked under the nose
+	for _, side in ipairs({ -1, 1 }) do
+		Parts.Blob(model, {
+			name = "Moustache",
+			sx = 0.36,
+			sy = 0.2,
+			sz = 0.26,
+			x = side * 0.24,
+			y = 1.79,
+			z = -0.62,
+			rot = CFrame.Angles(0, 0, side * 0.45),
+			color = c.beard,
+		})
+	end
+end
+
+--[[
 	The gnome, built entirely from smooth ellipsoids.
 
 	Every rounded form is one Parts.Blob rather than a stack of slices. That is
@@ -129,122 +343,33 @@ function GnomeBuilder.Gnome(def)
 		color = c.skin,
 	})
 
-	-- a big bulb of a nose
-	Parts.Blob(model, {
-		name = "Nose",
-		sx = 0.44,
-		sy = 0.42,
-		sz = 0.52,
-		y = 1.94,
-		z = -0.66,
-		color = Color3.fromRGB(255, 168, 152),
-	})
+	buildFace(model, def)
 
-	for _, side in ipairs({ -1, 1 }) do
-		-- eye white, pupil, and a small highlight that makes them read as alive
-		Parts.Blob(model, {
-			name = "Eye",
-			sx = 0.42,
-			sy = 0.48,
-			sz = 0.42,
-			x = side * 0.3,
-			y = 2.26,
-			z = -0.48,
-			color = Color3.fromRGB(255, 255, 255),
-		})
-		Parts.Blob(model, {
-			name = "Pupil",
-			sx = 0.22,
-			sy = 0.24,
-			sz = 0.22,
-			x = side * 0.32,
-			y = 2.24,
-			z = -0.62,
-			color = Color3.fromRGB(32, 26, 26),
-		})
-		Parts.Blob(model, {
-			name = "Glint",
-			sx = 0.09,
-			sy = 0.09,
-			sz = 0.09,
-			x = side * 0.37,
-			y = 2.32,
-			z = -0.68,
-			color = Color3.fromRGB(255, 255, 255),
-		})
-		-- bushy brow, tilted outward for a permanently startled look
-		Parts.Blob(model, {
-			name = "Brow",
-			sx = 0.46,
-			sy = 0.16,
-			sz = 0.2,
-			x = side * 0.31,
-			y = 2.54,
-			z = -0.5,
-			rot = CFrame.Angles(0, 0, side * 0.3),
-			color = c.beard,
-		})
-		Parts.Blob(model, {
-			name = "Cheek",
-			sx = 0.34,
-			sy = 0.26,
-			sz = 0.24,
-			x = side * 0.52,
-			y = 1.88,
-			z = -0.42,
-			color = Color3.fromRGB(255, 150, 150),
-		})
-	end
+	--[[
+		The hat is a chain of shrinking blobs following a curve.
 
-	-- The beard is a cluster of overlapping blobs rather than a cone, so it
-	-- reads as soft and bushy and keeps a rounded silhouette from every angle.
-	local beard = {
-		{ sx = 1.0, sy = 0.72, sz = 0.62, y = 1.66, z = -0.42 },
-		{ sx = 0.86, sy = 0.72, sz = 0.56, y = 1.3, z = -0.36 },
-		{ sx = 0.62, sy = 0.6, sz = 0.46, y = 1.0, z = -0.3 },
-		{ sx = 0.34, sy = 0.42, sz = 0.3, y = 0.76, z = -0.26 },
-	}
-	for _, blob in ipairs(beard) do
-		Parts.Blob(model, {
-			name = "Beard",
-			sx = blob.sx,
-			sy = blob.sy,
-			sz = blob.sz,
-			y = blob.y,
-			z = blob.z,
-			color = c.beard,
-		})
-	end
-	-- moustache tufts either side of the nose
-	for _, side in ipairs({ -1, 1 }) do
-		Parts.Blob(model, {
-			name = "Moustache",
-			sx = 0.34,
-			sy = 0.2,
-			sz = 0.26,
-			x = side * 0.22,
-			y = 1.78,
-			z = -0.62,
-			rot = CFrame.Angles(0, 0, side * 0.4),
-			color = c.beard,
-		})
-	end
-
-	-- The hat is a chain of shrinking blobs following a curve, which gives a
-	-- soft slouched cap. A straight stack of slices was the single worst
-	-- looking thing in the old build.
-	local HAT_SEGMENTS = 8
+		Smoothness here is entirely about overlap. Each segment steps up by
+		much less than its own height, so neighbouring ellipsoids bury each
+		other's ends and the union reads as one continuous surface instead of
+		a row of beads. Widening the step or shrinking sy is what makes it
+		look lumpy.
+	]]
+	local HAT_SEGMENTS = 16
+	local HAT_RISE = 1.5
 	for i = 0, HAT_SEGMENTS - 1 do
 		local t = i / (HAT_SEGMENTS - 1)
-		local width = 1.62 * (1 - t) ^ 0.7 + 0.1
+		-- taper is eased so the cap is fat at the base and needle-fine at the
+		-- tip, rather than shrinking linearly
+		local width = 1.66 * (1 - t) ^ 0.78 + 0.07
 		Parts.Blob(model, {
 			name = "Hat",
 			sx = width,
-			sy = 0.52 + 0.2 * (1 - t),
+			-- each blob is far taller than the gap to the next one
+			sy = 0.42,
 			sz = width,
-			-- leans back as it rises, so the tip flops behind the gnome
-			y = 2.62 + t * 1.42,
-			z = 0.34 * t * t,
+			-- leans back as it rises so the tip flops behind the gnome
+			y = 2.6 + t * HAT_RISE,
+			z = 0.42 * t * t,
 			color = c.hat,
 		})
 	end
@@ -258,11 +383,11 @@ function GnomeBuilder.Gnome(def)
 	})
 	Parts.Blob(model, {
 		name = "Pom",
-		sx = 0.4,
-		sy = 0.4,
-		sz = 0.4,
-		y = 4.06,
-		z = 0.36,
+		sx = 0.42,
+		sy = 0.42,
+		sz = 0.42,
+		y = 4.12,
+		z = 0.44,
 		color = c.beard,
 	})
 

@@ -41,6 +41,23 @@ GnomeData.Gnomes = {
 			boot = BOOT,
 			belt = BELT,
 		},
+		-- eager and slightly cross-eyed, like he has just been handed a job
+		face = {
+			eyeW = 0.50,
+			eyeH = 0.60,
+			spread = 0.30,
+			eyeY = 2.26,
+			-- right eye a touch bigger than the left; nothing here is symmetric
+			eyeBias = 0.08,
+			pupilConverge = 0.09,
+			pupilDrop = -0.02,
+			browTilt = 0.62,
+			browY = 2.62,
+			browLen = 0.46,
+			nose = { 0.42, 0.40, 0.50 },
+			mouth = "openSmile",
+			freckles = true,
+		},
 	},
 
 	dustan = {
@@ -60,6 +77,22 @@ GnomeData.Gnomes = {
 			boot = BOOT,
 			belt = BELT,
 		},
+		-- half asleep, one eye barely open, permanently unimpressed
+		face = {
+			eyeW = 0.44,
+			eyeH = 0.30,
+			spread = 0.32,
+			eyeY = 2.22,
+			eyeBias = 0.34,
+			pupilConverge = -0.03,
+			pupilDrop = -0.06,
+			browTilt = -0.18,
+			browY = 2.48,
+			browLen = 0.52,
+			nose = { 0.46, 0.44, 0.58 },
+			mouth = "buckTeeth",
+			lids = true,
+		},
 	},
 
 	bruk = {
@@ -78,6 +111,22 @@ GnomeData.Gnomes = {
 			beard = BEARD,
 			boot = BOOT,
 			belt = BELT,
+		},
+		-- tiny beady eyes, heavy scowl, enormous nose. grumpy but not scary
+		face = {
+			eyeW = 0.30,
+			eyeH = 0.32,
+			spread = 0.38,
+			eyeY = 2.24,
+			eyeBias = -0.1,
+			pupilConverge = 0.02,
+			pupilDrop = 0.0,
+			browTilt = -0.62,
+			browY = 2.46,
+			browLen = 0.58,
+			nose = { 0.58, 0.54, 0.68 },
+			mouth = "underbite",
+			unibrow = true,
 		},
 	},
 }
