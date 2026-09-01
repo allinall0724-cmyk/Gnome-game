@@ -47,6 +47,31 @@ function Parts.Disc(parent, opts)
 	})
 end
 
+--[[
+	A smooth ellipsoid.
+
+	A Ball part can only be a sphere, so anything egg-, bulb- or teardrop-
+	shaped had to be faked by stacking slices, which is what made the old
+	models look like stairs. A SpecialMesh scales independently of the part,
+	so one part covers any rounded form and shades smoothly.
+]]
+function Parts.Blob(parent, opts)
+	local part = Parts.New({
+		Name = opts.name or "Blob",
+		Size = Vector3.new(1, 1, 1),
+		Color = opts.color,
+		Material = opts.material or Enum.Material.SmoothPlastic,
+		Transparency = opts.transparency or 0,
+		CFrame = CFrame.new(opts.x or 0, opts.y, opts.z or 0) * (opts.rot or CFrame.new()),
+	})
+	local mesh = Instance.new("SpecialMesh")
+	mesh.MeshType = Enum.MeshType.Sphere
+	mesh.Scale = Vector3.new(opts.sx, opts.sy, opts.sz)
+	mesh.Parent = part
+	part.Parent = parent
+	return part
+end
+
 function Parts.Ball(parent, opts)
 	return Parts.New({
 		Name = opts.name or "Ball",
